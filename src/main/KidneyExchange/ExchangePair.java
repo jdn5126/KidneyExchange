@@ -1,20 +1,18 @@
 package KidneyExchange;
 
+// ExchangePair represents a (donor, receiver) participating in kidney exchange
 public class ExchangePair {
-    private Participant donor;
-    private Participant receiver;
+    private final Participant donor;
+    private final Participant receiver;
+    private final int id;
 
-    public ExchangePair(Participant donor, Participant receiver) {
-        this.donor = donor;
-        this.receiver = receiver;
-    }
-
-    public ExchangePair(KidneyType donorType, KidneyType receiverType) {
+    public ExchangePair(KidneyType donorType, KidneyType receiverType, int id) {
         this.donor = new Participant(donorType);
         this.receiver = new Participant(receiverType);
+        this.id = id;
     }
 
-    // Accessors and modifiers
+    // Accessors
     public Participant getDonor() {
         return donor;
     }
@@ -31,23 +29,26 @@ public class ExchangePair {
         return receiver.getType();
     }
 
-    public void setDonor(Participant donor) {
-        this.donor = donor;
+    // Map operators
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        }
+        if(o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ExchangePair ep = (ExchangePair)o;
+        return (this.donor == ep.getDonor()) && (this.receiver == ep.getReceiver());
     }
 
-    public void setDonorType(KidneyType type) {
-        this.donor.setType(type);
+    @Override
+    public int hashCode() {
+        // Unique identifier is the ExchangePair's id
+        return id;
     }
 
-    public void setReceiver(Participant receiver) {
-        this.receiver = receiver;
-    }
-
-    public void setReceiverType(KidneyType type) {
-        this.receiver.setType(type);
-    }
-
-    // Matching functions
+    // Matching functions for building directed graph
     public boolean canDonate(ExchangePair pair) {
         // return true if donor is compatible with other pair
         return donor.getType() == pair.getReceiverType();
@@ -56,5 +57,11 @@ public class ExchangePair {
     public boolean canReceive(ExchangePair pair) {
         // return true if receiver is compatible with other pair
         return receiver.getType() == pair.getDonorType();
+    }
+
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        s.append(id + ": (" + donor.getType() + ", " + receiver.getType() + ")");
+        return s.toString();
     }
 }

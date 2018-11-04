@@ -5,8 +5,8 @@ enum KidneyType {
     A, B, C, D;
 }
 
-public class Participant {
-    private KidneyType type;
+public final class Participant {
+    private final KidneyType type;
 
     public Participant(KidneyType type) {
         this.type = type;
@@ -14,9 +14,5 @@ public class Participant {
 
     public KidneyType getType() {
         return type;
-    }
-
-    public void setType(KidneyType type) {
-        this.type = type;
     }
 }
