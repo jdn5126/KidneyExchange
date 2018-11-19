@@ -13,9 +13,21 @@ public class Hospital {
         this.pairs = new ArrayList<ExchangePair>();
     }
 
+    public int getHospitalId() {
+        return hospitalId;
+    }
+
+    public int getMaxSurgeries() {
+        return maxSurgeries;
+    }
+
     // Get reference to list of ExchangePairs
     public ArrayList<ExchangePair> getPairs() {
         return pairs;
+    }
+
+    public int getSize() {
+        return pairs.size();
     }
 
     // Append pair to list
@@ -31,7 +43,7 @@ public class Hospital {
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append("Hospital: " + hospitalId + ", maxSurgeries=" + maxSurgeries + "\n");
-        for (ExchangePair pair: pairs) {
+        for(ExchangePair pair: pairs) {
             s.append(pair.toString() + "\n");
         }
         return s.toString();
