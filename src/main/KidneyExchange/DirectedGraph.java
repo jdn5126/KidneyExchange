@@ -1,7 +1,6 @@
 package KidneyExchange;
 
 import java.util.ArrayList;
-import java.util.concurrent.RejectedExecutionHandler;
 
 // Class representing directed graph amongst ExchangePairs within a single hospital
 public class DirectedGraph {
@@ -31,8 +30,22 @@ public class DirectedGraph {
             this.neighbors.remove(neighbor);
         }
 
-        public boolean hasNeighbor(ExchangePair neighbor) {
-            return this.neighbors.contains(neighbor);
+        // Map operators use ExchangePair map functions
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) {
+                return true;
+            }
+            if(o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Node node = (Node)o;
+            return (this.getPair().equals(node.getPair()));
+        }
+
+        @Override
+        public int hashCode() {
+            return this.getPair().hashCode();
         }
     }
 

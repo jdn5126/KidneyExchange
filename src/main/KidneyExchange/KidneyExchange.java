@@ -13,7 +13,7 @@ public class KidneyExchange {
         for(int i=0; i < numHospitals; i++) {
             // Create each hospital with 10 Participants and the ability to perform
             // 10 simultaneous surgeries. This may become a command line arg.
-            hospitals[i] = KidneyExchangeHelper.createHospital(5, 5);
+            hospitals[i] = KidneyExchangeHelper.createHospital(20, 5);
         }
 
         // Print hospitals participating in KidneyExchange
@@ -25,7 +25,7 @@ public class KidneyExchange {
         // Run the kidney exchange for some fixed number of rounds
         // This may be a command line arg, but for now we will do one round,
         // i.e. local matching and no moving pairs.
-        runKidneyExchange(1, hospitals);
+        runKidneyExchange(2, hospitals);
     }
 
     private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {
@@ -38,7 +38,7 @@ public class KidneyExchange {
         //     3. Each hospital tallies the kidney types that they need to make forward
         //        progress and sends that information to each peer.
 
-        for(int i=0; i < numRounds; i++) {
+        for(int i=1; i < (numRounds + 1); i++) {
             System.out.println("\nRound: " + i);
             for(Hospital hospital : hospitals) {
                 // Create directed graph from ExchangePairs

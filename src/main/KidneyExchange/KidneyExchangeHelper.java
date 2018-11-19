@@ -107,10 +107,9 @@ public class KidneyExchangeHelper {
         ArrayList<DirectedGraph.Node> cycle = new ArrayList<>();
 
         // After calling cycleRecurse, currentNode will be set to last node in cycle, or null if there is no cycle.
-        DirectedGraph.Node currentNode = root;
         // If cycle exists, it will be stored in travel map.
         HashMap<DirectedGraph.Node, DirectedGraph.Node> travelMap = new HashMap<>();
-        DirectedGraph.Node cycleRoot = cycleRecurse(graph, currentNode, null,
+        DirectedGraph.Node cycleRoot = cycleRecurse(graph, root, null,
                                                     new ArrayList<>(), new ArrayList<>(), travelMap);
         if(cycleRoot != null) {
             // Build cycle from travelMap
@@ -120,7 +119,7 @@ public class KidneyExchangeHelper {
                 cycle.add(0, prev);
                 prev = travelMap.get(prev);
             }
-            cycle.add(0, root);
+            cycle.add(0, cycleRoot);
         }
         return cycle;
     }
