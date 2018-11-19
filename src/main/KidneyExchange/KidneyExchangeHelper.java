@@ -36,8 +36,7 @@ public class KidneyExchangeHelper {
         // For each ExchangePair, build adjacency list
         for(ExchangePair pair: hospital.getPairs()) {
             DirectedGraph.Node node = graph.createNode(pair);
-            // Add compatible pairs to neighbor list, including own pair
-            // if donor and recipient are already matched
+            // Add compatible pairs to neighbor list
             for(ExchangePair neighbor: hospital.getPairs()) {
                 if(pair.canReceive(neighbor)) {
                     node.addNeighbor(neighbor);
@@ -57,6 +56,10 @@ public class KidneyExchangeHelper {
         //     3. If there are no remainingSlots or all nodes have been covered, return
         //        existing matches. Otherwise, continue at 1.
 
+        // Return null if hospital is empty, as non null hospital guarantees graph has at least one node.
+        if(hospital.getSize() == 0) {
+            return null;
+        }
         HashMap<ExchangePair, ExchangePair> matches = new HashMap<>();
         int remainingSlots = hospital.getMaxSurgeries();
 
@@ -64,8 +67,10 @@ public class KidneyExchangeHelper {
         // forward progress in the presence of bad random selection or all nodes being part
         // of a cycle that is larger than the remaining  number of surgery slots.
         DirectedGraph.Node[] iterable = new DirectedGraph.Node[graph.getSize()];
-        for(int i=0; i < graph.getSize(); i++) {
-            iterable[i] = graph.getNodes().get(i);
+        int x = 0;
+        for(DirectedGraph.Node node: graph.getNodes()) {
+            iterable[x] = node;
+            x += 1;
         }
 
         for(DirectedGraph.Node node: iterable) {
@@ -74,41 +79,33 @@ public class KidneyExchangeHelper {
                 continue;
             }
             // Find first cycle doing DFS starting from node
-            ArrayList<DirectedGraph.Node> cycle = findCycle(graph, node, remainingSlots);
+            ArrayList<DirectedGraph.Node> cycle = findCycle(graph, node);
             int cycleSize = cycle.size();
-            if(cycleSize == 0) {
-                // Graph no longer contains any cycles
-                break;
-            } else if(cycleSize > remainingSlots) {
-                // Matching is too large, so move to next node
+            if(cycleSize == 0 || cycleSize > remainingSlots) {
+                // Either no cycle exists along the traversal from this node or the cycle
+                // is too large. Either way, move to the next node and run DFS.
                 continue;
             } else {
                 // Mark matches and remove cycle from graph
                 remainingSlots -= cycleSize;
                 for(int i=0; i < cycleSize; i++) {
-                    ExchangePair pair = cycle.get(i).getPair();
+                    DirectedGraph.Node startNode = cycle.get(i);
                     ExchangePair match = cycle.get((i+1) % cycleSize).getPair();
-                    matches.put(pair, match);
-                    graph.removeNode(graph.getNode(pair));
+                    matches.put(startNode.getPair(), match);
+                    graph.removeNode(startNode);
                 }
             }
         }
         return matches;
     }
 
-    // Helper function for finding cycle starting with root
-    public static ArrayList<DirectedGraph.Node> findCycle(DirectedGraph graph, DirectedGraph.Node root, int maxLength) {
-        // Algorithm to find cycle operates as follows:
-        //     1. Add current node to visiting set
-        //     2. For each neighbor of node:
-        //            2a. If neighbor is in finished set, skip
-        //            2b. Else if neighbor is in visiting set, add to travel map and break
-        //            2c. Else continue at 1 with neighbor as current node
+    // Helper function for finding cycle within graph starting at root
+    public static ArrayList<DirectedGraph.Node> findCycle(DirectedGraph graph, DirectedGraph.Node root) {
         ArrayList<DirectedGraph.Node> cycle = new ArrayList<>();
 
-        // After calling cycleRecurse, currentNode will be set to last node in cycle, or null if there is no cycle.
-        // If cycle exists, it will be stored in travel map.
+        // cycleRecurse will store the progression of the DFS-walk in travelMap
         HashMap<DirectedGraph.Node, DirectedGraph.Node> travelMap = new HashMap<>();
+        // If a cycle was found, cycleRoot will be set to the node starting and ending the cycle.
         DirectedGraph.Node cycleRoot = cycleRecurse(graph, root, null,
                                                     new ArrayList<>(), new ArrayList<>(), travelMap);
         if(cycleRoot != null) {
@@ -124,13 +121,21 @@ public class KidneyExchangeHelper {
         return cycle;
     }
 
-    // Helper function for doing recursive DFS
+    // Helper function for doing recursive DFS-walk
     public static DirectedGraph.Node cycleRecurse(DirectedGraph graph,
                                                   DirectedGraph.Node currentNode,
                                                   DirectedGraph.Node previousNode,
                                                   ArrayList<DirectedGraph.Node> visiting,
                                                   ArrayList<DirectedGraph.Node> finished,
                                                   HashMap<DirectedGraph.Node, DirectedGraph.Node> travelMap) {
+        // Algorithm to find cycle operates as follows:
+        //     1. Add current node to visiting set and mark how we got to this node in travel map
+        //     2. For each neighbor of node:
+        //            2a. If neighbor is in visiting set, then neighbor is the root of the cycle.
+        //                Map cycleRoot as introduced by currentNode so that iterating backward in
+        //                travelMap until cycleRoot yields cycle.
+        //            2a. Else if neighbor is in finished set, skip neighbor.
+        //            2c. Else continue at 1 with current node updated as neighbor
         // Add current node to visiting and to travel map
         visiting.add(currentNode);
         travelMap.put(currentNode, previousNode);

@@ -13,7 +13,7 @@ public class KidneyExchange {
         for(int i=0; i < numHospitals; i++) {
             // Create each hospital with 10 Participants and the ability to perform
             // 10 simultaneous surgeries. This may become a command line arg.
-            hospitals[i] = KidneyExchangeHelper.createHospital(20, 5);
+            hospitals[i] = KidneyExchangeHelper.createHospital(10, 5);
         }
 
         // Print hospitals participating in KidneyExchange
@@ -23,9 +23,8 @@ public class KidneyExchange {
         }
 
         // Run the kidney exchange for some fixed number of rounds
-        // This may be a command line arg, but for now we will do one round,
-        // i.e. local matching and no moving pairs.
-        runKidneyExchange(2, hospitals);
+        // This may become a command line arg, but for now it is hardcoded.
+        runKidneyExchange(1, hospitals);
     }
 
     private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {
@@ -43,16 +42,18 @@ public class KidneyExchange {
             for(Hospital hospital : hospitals) {
                 // Create directed graph from ExchangePairs
                 DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-                System.out.println("\nAdjacency List for Hospital: " + hospital.getHospitalId());
+                System.out.println("\nAdjacency List for Hospital " + hospital.getHospitalId() + ":");
                 System.out.print(graph);
 
                 // Return matched pairs
                 HashMap<ExchangePair, ExchangePair> matches = KidneyExchangeHelper.greedyMatches(hospital, graph);
                 // Print matches and remove matched pairs from hospital
                 System.out.println("Matches: ");
-                for(ExchangePair pair: matches.keySet()) {
-                    System.out.println(pair.toString() + " -> " + matches.get(pair).toString());
-                    hospital.removePair(pair);
+                if(matches != null) {
+                    for (ExchangePair pair : matches.keySet()) {
+                        System.out.println(pair.toString() + " -> " + matches.get(pair).toString());
+                        hospital.removePair(pair);
+                    }
                 }
             }
         }
