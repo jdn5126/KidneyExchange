@@ -4,12 +4,12 @@ package KidneyExchange;
 public class ExchangePair {
     private final Participant donor;
     private final Participant receiver;
-    private final int id;
+    private final int pairId;
 
     public ExchangePair(KidneyType donorType, KidneyType receiverType, int id) {
         this.donor = new Participant(donorType);
         this.receiver = new Participant(receiverType);
-        this.id = id;
+        this.pairId = id;
     }
 
     // Accessors
@@ -29,6 +29,10 @@ public class ExchangePair {
         return receiver.getType();
     }
 
+    public int getPairId() {
+        return pairId;
+    }
+
     // Map operators
     @Override
     public boolean equals(Object o) {
@@ -39,13 +43,13 @@ public class ExchangePair {
             return false;
         }
         ExchangePair ep = (ExchangePair)o;
-        return (this.donor == ep.getDonor()) && (this.receiver == ep.getReceiver());
+        return (this.pairId == ep.getPairId());
     }
 
     @Override
     public int hashCode() {
         // Unique identifier is the ExchangePair's id
-        return id;
+        return pairId;
     }
 
     // Matching functions for building directed graph
@@ -61,7 +65,7 @@ public class ExchangePair {
 
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(id + ": (" + donor.getType() + ", " + receiver.getType() + ")");
+        s.append("(" + donor.getType() + ", " + receiver.getType() + ")");
         return s.toString();
     }
 }
