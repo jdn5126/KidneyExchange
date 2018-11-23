@@ -55,6 +55,9 @@ public class Program {
                     CircuitFinder.findCircuitsOfMaxSize( g,2 )
             );
         }
+
+        System.out.println();
+        SimplexTest.run();
     }
 
     static void printStronglyConnectedComponents( Set<Set<Node<Integer>>> sccs ) {
