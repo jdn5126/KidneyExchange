@@ -23,4 +23,18 @@ public class TestData {
 
         return g;
     }
+
+    // G2 is a graph with the following structure:
+    //
+    //     n1 <----> n2 ----> n3
+    //
+    public static DirectedGraph<Integer> createG2() {
+        DirectedGraph<Integer> g = new DirectedGraph<>();
+
+        g.addEdge( 1, 2 );
+        g.addEdge( 2, 1 );
+        g.addEdge( 2, 3 );
+
+        return g;
+    }
 }
