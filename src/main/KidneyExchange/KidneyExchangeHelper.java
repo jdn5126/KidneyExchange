@@ -192,24 +192,10 @@ public class KidneyExchangeHelper {
         int randCycle = rand.nextInt(matches.size());
         HashMap<ExchangePair, ExchangePair> cycle = matches.get(randCycle);
 
-        // Select random pair from cycle for removal
-        int randIndex = rand.nextInt(cycle.size());
-        int x = 0;
-        ExchangePair pair = null;
-        for(ExchangePair temp: cycle.keySet()) {
-            if(x == randIndex) {
-                pair = temp;
-                break;
-            }
-            x += 1;
-        }
-
-        // Remove ExchangePairs in cycle
-        while(cycle.containsKey(pair)) {
-            ExchangePair partner = cycle.get(pair);
-            cycle.remove(pair);
-            pair = partner;
-        }
+        // Choose first pair in cycle as pair to be removed
+        ExchangePair pair = cycle.keySet().iterator().next();
+        // Remove cycle from list and return random pair to be removed from exchange
+        matches.remove(cycle);
         return pair;
     }
 }
