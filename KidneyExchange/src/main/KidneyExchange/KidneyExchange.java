@@ -1,20 +1,37 @@
 package KidneyExchange;
 
+import com.beust.jcommander.JCommander;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class KidneyExchange {
+    private static final int DEFAULT_NUM_HOSPITALS = 3;
+    private static final int DEFAULT_NUM_PAIRS = 5;
+    private static final int DEFAULT_MAX_SURGEERIES = 5;
+    private static final int DEFAULT_NUM_ROUNDS = 4;
 
     // Main function controlling behavior of kidney exchange
     public static void main(String[] args) {
+        CommandLine cli = new CommandLine();
+        JCommander.newBuilder()
+                .addObject( cli )
+                .build()
+                .parse( args );
+
+        if( cli.seed != null )
+            KidneyExchangeHelper.setRandomSeed( cli.seed );
+
         // Create Hospitals participating in Kidney Exchange
-        // For now, hardcode 3 hospitals, though this may become a cl arg
-        int numHospitals = 3;
+        int numHospitals = (cli.numHospitals == null) ? DEFAULT_NUM_HOSPITALS : cli.numHospitals;
+        int numPairs = (cli.numPairs == null) ? DEFAULT_NUM_PAIRS : cli.numPairs;
+        int maxSurgeries = (cli.maxSurgeries == null) ? DEFAULT_MAX_SURGEERIES : cli.maxSurgeries;
+
         Hospital[] hospitals = new Hospital[numHospitals];
         for(int i=0; i < numHospitals; i++) {
-            // Create each hospital with 10 Participants and the ability to perform
-            // 10 simultaneous surgeries. This may become a command line arg.
-            hospitals[i] = KidneyExchangeHelper.createHospital(5, 5);
+            // Create each hospital with some number of participants and the ability to perform some
+            // number of simultaneous surgeries.
+            hospitals[i] = KidneyExchangeHelper.createHospital(numPairs, maxSurgeries);
         }
 
         // Print hospitals participating in KidneyExchange
@@ -24,8 +41,8 @@ public class KidneyExchange {
         }
 
         // Run the kidney exchange for some fixed number of rounds
-        // This may become a command line arg, but for now it is hardcoded.
-        runKidneyExchange(4, hospitals);
+        int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
+        runKidneyExchange(numRounds, hospitals);
     }
 
     private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {

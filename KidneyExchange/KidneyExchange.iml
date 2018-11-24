@@ -8,5 +8,6 @@
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="org.choco-solver:choco-solver:4.0.9" level="project" />
+    <orderEntry type="library" name="com.beust:jcommander:1.72" level="project" />
   </component>
 </module>

@@ -13,6 +13,10 @@ public class KidneyExchangeHelper {
     static Random rand = new Random();
     private static KidneyType[] kidneyTypes = KidneyType.values();
 
+    public static void setRandomSeed( long seed ) {
+        rand.setSeed( seed );
+    }
+
     // Helper function for creating random ExchangePair
     public static ExchangePair randomExchangePair(int hospitalId) {
         KidneyType donorType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
