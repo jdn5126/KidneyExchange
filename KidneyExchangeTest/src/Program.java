@@ -53,7 +53,7 @@ public class Program {
         }
 
         System.out.println();
-        SimplexTest.run();
+        MILPTest.run();
     }
 
     static void printStronglyConnectedComponents( Set<Set<Node<Integer>>> sccs ) {
