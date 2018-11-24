@@ -22,6 +22,10 @@ public class Node<T> {
         return id;
     }
 
+    public T unwrap() {
+        return data;
+    }
+
     @Override
     public boolean equals( Object o ) {
         if( this == o ) return true;

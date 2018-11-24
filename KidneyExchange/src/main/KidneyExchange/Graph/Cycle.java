@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 public class Cycle<T> {
     private Node<T> startNode;
     private List<DirectedEdge<T>> path;
-    private double cycleWeight;
+    private int cycleWeight;
     private Set<Node<T>> nodes;
 
     public Cycle( Node<T> startNode, List<DirectedEdge<T>> path ) {
         this.startNode = startNode;
         this.path = path;
-        this.cycleWeight = this.path.stream().mapToDouble( e -> e.getWeight() ).sum();
+        this.cycleWeight = this.path.stream().mapToInt( e -> e.getWeight() ).sum();
         this.nodes = new HashSet<>();
         for( DirectedEdge<T> edge : this.path ) {
             nodes.add( edge.getTarget() );
@@ -33,7 +33,7 @@ public class Cycle<T> {
         return Collections.unmodifiableList( path );
     }
 
-    public double getCycleWeight() {
+    public int getCycleWeight() {
         return cycleWeight;
     }
 
@@ -53,5 +53,15 @@ public class Cycle<T> {
     @Override
     public int hashCode() {
         return Objects.hash( startNode, path );
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        s.append( "Cycle: " + startNode.unwrap() );
+        for( DirectedEdge<T> edge : path ) {
+            s.append( edge );
+        }
+        return s.toString();
     }
 }

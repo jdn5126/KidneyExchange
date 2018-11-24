@@ -58,4 +58,16 @@ public class DirectedGraph<T> {
     private Node<T> createNode( T data ) {
         return Node.create( nextNodeId++, data );
     }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        for( Node<T> fromNode : nodes ) {
+            s.append( fromNode.unwrap().toString() + "\n" );
+            for( DirectedEdge<T> edge : getOutgoingEdgesForNode( fromNode ) ) {
+                s.append( "  " + edge + "\n" );
+            }
+        }
+        return s.toString();
+    }
 }

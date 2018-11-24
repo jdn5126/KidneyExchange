@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public class CycleFinderTest {
@@ -24,7 +25,7 @@ public class CycleFinderTest {
         );
 
         // Find all circuits in the test graph.
-        Set<Cycle<Integer>> cycles = CycleFinder.findCycles( g );
+        List<Cycle<Integer>> cycles = CycleFinder.findCycles( g );
         Assertions.assertEquals( 1, cycles.size() );
         Assertions.assertTrue( cycles.contains( cycle1 ) );
 
@@ -73,7 +74,7 @@ public class CycleFinderTest {
         );
 
         // Find all circuits in the test graph.
-        Set<Cycle<Integer>> cycles = CycleFinder.findCycles( g );
+        List<Cycle<Integer>> cycles = CycleFinder.findCycles( g );
         Assertions.assertEquals( 3, cycles.size() );
         Assertions.assertTrue( cycles.contains( cycle1 ) );
         Assertions.assertTrue( cycles.contains( cycle2 ) );
@@ -110,7 +111,7 @@ public class CycleFinderTest {
         );
 
         // Find all circuits in the test graph.
-        Set<Cycle<Integer>> cycles = CycleFinder.findCyclesOfMaxSize( g, 2 );
+        List<Cycle<Integer>> cycles = CycleFinder.findCyclesOfMaxSize( g, 2 );
         Assertions.assertEquals( 2, cycles.size() );
         Assertions.assertTrue( cycles.contains( cycle1 ) );
         Assertions.assertTrue( cycles.contains( cycle2 ) );

@@ -1,5 +1,6 @@
 import KidneyExchange.Graph.*;
 
+import java.util.List;
 import java.util.Set;
 
 public class Program {
@@ -66,7 +67,7 @@ public class Program {
         }
     }
 
-    static void printCircuits( Set<Cycle<Integer>> cycles ) {
+    static void printCircuits( List<Cycle<Integer>> cycles ) {
         for( Cycle<Integer> cycle : cycles ) {
             System.out.print( "Cycle: " + cycle.getStartNode().getId() + " " );
             for( DirectedEdge<Integer> edge : cycle.getPath() ) {

@@ -21,16 +21,16 @@ public class CycleFinder<T> {
     private Deque<DirectedEdge<T>> pathStack = new ArrayDeque<>();
 
     // Finds all cycles in the given directed graph, where a cycle here is meant to be an elementary
-    // circuit. The cycles are returned in a set. Each cycle in the set specifies the start node
-    // for the cycle and an ordered list of directed edges that specifies the subsequent nodes in
-    // the cycle's path along with the weights of each of those edges.
-    public static <T> Set<Cycle<T>> findCycles( DirectedGraph<T> g ) {
+    // circuit. The cycles are returned in an ordered list. Each cycle in the set specifies the
+    // start node for the cycle and an ordered list of directed edges that specifies the subsequent
+    // nodes in the cycle's path along with the weights of each of those edges.
+    public static <T> List<Cycle<T>> findCycles( DirectedGraph<T> g ) {
         return findCyclesOfMaxSize( g, Integer.MAX_VALUE );
     }
 
     // Similar to CycleFinder.findCycles except this only returns cycles that are at most the
     // given size.
-    public static <T> Set<Cycle<T>> findCyclesOfMaxSize( DirectedGraph<T> g , int maxSize ) {
+    public static <T> List<Cycle<T>> findCyclesOfMaxSize( DirectedGraph<T> g , int maxSize ) {
         CycleFinder<T> finder = new CycleFinder<>();
         return finder.findCyclesInner( g, maxSize );
     }
@@ -38,10 +38,10 @@ public class CycleFinder<T> {
     private CycleFinder() {
     }
 
-    private Set<Cycle<T>> findCyclesInner( DirectedGraph<T> g, int maxSize ) {
+    private List<Cycle<T>> findCyclesInner( DirectedGraph<T> g, int maxSize ) {
         int s = 1;
         Set<Node<T>> nodes = g.getNodes();
-        Set<Cycle<T>> cycles = new HashSet<>();
+        List<Cycle<T>> cycles = new ArrayList<>();
 
         for( Node<T> v : nodes ) {
             blocked.put( v, false );
@@ -71,7 +71,7 @@ public class CycleFinder<T> {
         return cycles;
     }
 
-    private boolean circuit( Node<T> v, int s, int maxSize, Map<Node<T>, Set<DirectedEdge<T>>> AK, Set<Cycle<T>> cycles ) {
+    private boolean circuit( Node<T> v, int s, int maxSize, Map<Node<T>, Set<DirectedEdge<T>>> AK, List<Cycle<T>> cycles ) {
         boolean f = false;
         blocked.put( v, true );
 
@@ -122,11 +122,24 @@ public class CycleFinder<T> {
     private void unblock( Node<T> u ) {
         blocked.put( u, false );
         Set<Node<T>> Bu = B.get( u );
-        for( Node<T> w : Bu ) {
-            Bu.remove( w );
+
+        // Need to be careful about how we remove nodes from Bu. Since we need to remove items from
+        // the same collection we're iterating over, we need to remove items through the iterator
+        // directly. This means we can't use Java's nicer for loop syntax here.
+        Iterator<Node<T>> iterator = Bu.iterator();
+        while( iterator.hasNext() ) {
+            Node<T> w = iterator.next();
+            iterator.remove();
             if( blocked.get( w ) )
                 unblock( w );
         }
+
+        // NOTE: Need to build unit test case that fails on this code.
+//        for( Node<T> w : Bu ) {
+//            Bu.remove( w );
+//            if( blocked.get( w ) )
+//                unblock( w );
+//        }
     }
 
     private LeastScc<T> getLeastScc( DirectedGraph<T> g, int s ) {

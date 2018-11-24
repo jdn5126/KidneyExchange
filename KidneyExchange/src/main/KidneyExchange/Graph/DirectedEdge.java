@@ -37,4 +37,9 @@ public class DirectedEdge<T> {
     public int hashCode() {
         return Objects.hash( target, weight );
     }
+
+    @Override
+    public String toString() {
+        return " --" + weight + "--> " + target.unwrap();
+    }
 }
