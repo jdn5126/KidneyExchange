@@ -24,7 +24,7 @@ public class KidneyExchange {
 
         // Run the kidney exchange for some fixed number of rounds
         // This may become a command line arg, but for now it is hardcoded.
-        runKidneyExchange(1, hospitals);
+        runKidneyExchange(2, hospitals);
     }
 
     private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {
@@ -38,23 +38,40 @@ public class KidneyExchange {
         //        progress and sends that information to each peer.
 
         for(int i=1; i < (numRounds + 1); i++) {
-            System.out.println("\nRound: " + i);
+            System.out.println("\nRound: " + i + "\n");
             for(Hospital hospital : hospitals) {
+                // INCREMENTAL SETTING #1: Add/remove random pair from hospital 2/5 of the time
+                switch(KidneyExchangeHelper.rand.nextInt(5)) {
+                    case 1: // add pair
+                        KidneyExchangeHelper.addRandomExchangePair(hospital);
+                        break;
+                    case 2: // remove pair
+                        KidneyExchangeHelper.delRandomExchangePair(hospital);
+                        break;
+                }
                 // Create directed graph from ExchangePairs
                 DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-                System.out.println("\nAdjacency List for Hospital " + hospital.getHospitalId() + ":");
+                System.out.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
                 System.out.print(graph);
 
                 // Return matched pairs
                 HashMap<ExchangePair, ExchangePair> matches = KidneyExchangeHelper.greedyMatches(hospital, graph);
+                // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
+                if(matches.size() > 0 && KidneyExchangeHelper.rand.nextInt(8) == 7) {
+                    ExchangePair dropout = KidneyExchangeHelper.delRandomMatchedPair(matches);
+                    System.out.println("\n" + dropout.toString() + " has dropped out of matching.");
+                    hospital.removePair(dropout);
+                }
+
                 // Print matches and remove matched pairs from hospital
-                System.out.println("Matches: ");
+                System.out.println("\nMatches: ");
                 if(matches != null) {
-                    for (ExchangePair pair : matches.keySet()) {
+                    for(ExchangePair pair : matches.keySet()) {
                         System.out.println(pair.toString() + " -> " + matches.get(pair).toString());
                         hospital.removePair(pair);
                     }
                 }
+                System.out.print("\n");
             }
         }
     }

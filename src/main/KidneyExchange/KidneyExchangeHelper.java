@@ -9,8 +9,35 @@ public class KidneyExchangeHelper {
     // Helper variables that are initialized when class is first loaded
     static int hospitalId = 0;
     static int participantId = 0;
+    // TODO: Log random seed and allow it to be set for reproducibility
     static Random rand = new Random();
     private static KidneyType[] kidneyTypes = KidneyType.values();
+
+    // Helper function for creating random ExchangePair
+    public static ExchangePair randomExchangePair() {
+        KidneyType donorType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
+        KidneyType receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
+        // Avoid creating ExchangePair with matching kidney types
+        while(donorType == receiverType) {
+            receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
+        }
+        return new ExchangePair(donorType, receiverType, ++participantId);
+    }
+
+    // Helper function for adding random ExchangePair to hospital
+    public static void addRandomExchangePair(Hospital hospital) {
+        ExchangePair pair = KidneyExchangeHelper.randomExchangePair();
+        System.out.println("INCREMENTAL: adding " + pair.toString() + " to hospital " + hospital.getHospitalId());
+        hospital.addPair(pair);
+    }
+
+    // Helper function for removing random ExchangePair from hospital
+    public static void delRandomExchangePair(Hospital hospital) {
+        int index = rand.nextInt(hospital.getSize());
+        ExchangePair pair = hospital.getPairs().get(index);
+        System.out.println("INCREMENTAL: removing " + pair.toString() + " from hospital " + hospital.getHospitalId());
+        hospital.removePair(pair);
+    }
 
     // Helper function for creating Hospital
     public static Hospital createHospital(int numPairs, int maxSurgeries) {
@@ -18,14 +45,7 @@ public class KidneyExchangeHelper {
 
         // Randomly assign ExchangePairs to Hospital
         for(int i=0; i < numPairs; i++) {
-            KidneyType donorType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
-            KidneyType receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
-            // Avoid creating ExchangePair with matching kidney types
-            while(donorType == receiverType) {
-                receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
-            }
-            ExchangePair pair = new ExchangePair(donorType, receiverType, ++participantId);
-            hospital.addPair(pair);
+            hospital.addPair(randomExchangePair());
         }
         return hospital;
     }
@@ -162,5 +182,28 @@ public class KidneyExchangeHelper {
         visiting.remove(currentNode);
         finished.add(currentNode);
         return null;
+    }
+
+    // Helper function for simulating an ExchangePair dropping out after already matched
+    public static ExchangePair delRandomMatchedPair(HashMap<ExchangePair, ExchangePair> matches) {
+        int randIndex = rand.nextInt(matches.size());
+        int x = 0;
+        // Select random pair for HashMap by iterating to random entry in keySet
+        ExchangePair pair = null;
+        for(ExchangePair temp: matches.keySet()) {
+            if(x == randIndex) {
+                pair = temp;
+                break;
+            }
+            x += 1;
+        }
+
+        // Remove ExchangePairs in cycle
+        while(matches.containsKey(pair)) {
+            ExchangePair partner = matches.get(pair);
+            matches.remove(pair);
+            pair = partner;
+        }
+        return pair;
     }
 }
