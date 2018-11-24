@@ -32,7 +32,7 @@ public class TestData {
         DirectedGraph<Integer> g = new DirectedGraph<>();
 
         g.addEdge( 1, 2 );
-        g.addEdge( 2, 1 );
+        g.addEdgeWithWeight( 2, 1, 2.0 );
         g.addEdge( 2, 3 );
 
         return g;

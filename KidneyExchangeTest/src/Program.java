@@ -1,9 +1,5 @@
-import KidneyExchange.Graph.CircuitFinder;
-import KidneyExchange.Graph.DirectedGraph;
-import KidneyExchange.Graph.Node;
-import KidneyExchange.Graph.SCC;
+import KidneyExchange.Graph.*;
 
-import java.util.List;
 import java.util.Set;
 
 public class Program {
@@ -34,7 +30,7 @@ public class Program {
             DirectedGraph<Integer> g = TestData.createG2();
             System.out.println( "Printing circuits of G2." );
             printCircuits(
-                    CircuitFinder.findCircuits( g )
+                    CycleFinder.findCycles( g )
             );
         }
 
@@ -43,7 +39,7 @@ public class Program {
             DirectedGraph<Integer> g = TestData.createG1();
             System.out.println( "Printing circuits of G1." );
             printCircuits(
-                    CircuitFinder.findCircuits( g )
+                    CycleFinder.findCycles( g )
             );
         }
 
@@ -52,7 +48,7 @@ public class Program {
             DirectedGraph<Integer> g = TestData.createG1();
             System.out.println( "Printing circuits of G1 with max size 2." );
             printCircuits(
-                    CircuitFinder.findCircuitsOfMaxSize( g,2 )
+                    CycleFinder.findCyclesOfMaxSize( g,2 )
             );
         }
 
@@ -70,11 +66,11 @@ public class Program {
         }
     }
 
-    static void printCircuits( Set<List<Node<Integer>>> circuits ) {
-        for( List<Node<Integer>> circuit : circuits ) {
-            System.out.print( "Circuit: " );
-            for( Node<Integer> v : circuit ) {
-                System.out.print( v.getId() + " " );
+    static void printCircuits( Set<Cycle<Integer>> cycles ) {
+        for( Cycle<Integer> cycle : cycles ) {
+            System.out.print( "Cycle: " + cycle.getStartNode().getId() + " " );
+            for( DirectedEdge<Integer> edge : cycle.getPath() ) {
+                System.out.print( "(" + edge.getWeight() + ") " + edge.getTarget().getId() + " " );
             }
             System.out.println();
         }

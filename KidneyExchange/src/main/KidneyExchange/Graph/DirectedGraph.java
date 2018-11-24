@@ -14,9 +14,13 @@ public class DirectedGraph<T> {
     private Map<Integer, Node<T>> idToNodes = new HashMap<>();
 
     private Set<Node<T>> nodes = new HashSet<>();
-    private Map<Node<T>, Set<Node<T>>> successors = new HashMap<>();
+    private Map<Node<T>, Set<DirectedEdge<T>>> successors = new HashMap<>();
 
     public void addEdge( T from, T to ) {
+        addEdgeWithWeight( from, to, 1.0 );
+    }
+
+    public void addEdgeWithWeight( T from, T to, double weight ) {
         Node<T> fromNode = dataToNodes.computeIfAbsent( from, k -> {
             Node<T> n = createNode( from );
             nodes.add( n );
@@ -31,8 +35,8 @@ public class DirectedGraph<T> {
             return n;
         } );
 
-        Set<Node<T>> fromSuccessors = successors.computeIfAbsent( fromNode, key -> new HashSet<>() );
-        fromSuccessors.add( toNode );
+        Set<DirectedEdge<T>> fromSuccessors = successors.computeIfAbsent( fromNode, key -> new HashSet<>() );
+        fromSuccessors.add( new DirectedEdge<>( toNode, weight ) );
     }
 
     public Set<Node<T>> getNodes() {
@@ -47,7 +51,7 @@ public class DirectedGraph<T> {
         return dataToNodes.get( data );
     }
 
-    public Set<Node<T>> getSuccessorsForNode( Node<T> node ) {
+    public Set<DirectedEdge<T>> getOutgoingEdgesForNode( Node<T> node ) {
         return Collections.unmodifiableSet( successors.computeIfAbsent( node, key -> new HashSet<>() ) );
     }
 

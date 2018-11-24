@@ -56,7 +56,9 @@ public class SCC<T> {
         S.push( v );
         nodeOnStack.put( v, true );
 
-        for( Node<T> w : g.getSuccessorsForNode( v ) ) {
+        for( DirectedEdge<T> edge : g.getOutgoingEdgesForNode( v ) ) {
+            Node<T> w = edge.getTarget();
+
             if( w.getId() < leastNode.getId() )
                 continue;
 

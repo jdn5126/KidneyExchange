@@ -12,35 +12,36 @@ import java.util.stream.Collectors;
 // https://doi.org/10.1137/0204007
 //
 // Field, variable, and method names picked to closely resemble those used in the original paper.
+// Adapted to limit cycles returned to a max size and to better handle directed weighted graphs by
+// returning weights of edges along cycle in addition to nodes along the cycle's path.
 //
-public class CircuitFinder<T> {
+public class CycleFinder<T> {
     private Map<Node<T>, Boolean> blocked = new HashMap<>();
     private Map<Node<T>, Set<Node<T>>> B = new HashMap<>();
-    private Deque<Node<T>> stack = new ArrayDeque<>();
+    private Deque<DirectedEdge<T>> pathStack = new ArrayDeque<>();
 
-    // Finds all elementary circuits in the given directed graph. The circuits are returned in a set.
-    // Each circuit in the set is a list containing the ordered sequence of nodes along that circuit.
-    // The first and last elements in each circuit are same, thus the edges in the circuit are found
-    // looping over the nodes in the circuit and for each node i (0 <= i < circuit.size()), select
-    // the edge (circuit[i].getId(), circuit[i+1].getId()).
-    public static <T> Set<List<Node<T>>> findCircuits( DirectedGraph<T> g ) {
-        return findCircuitsOfMaxSize( g, Integer.MAX_VALUE );
+    // Finds all cycles in the given directed graph, where a cycle here is meant to be an elementary
+    // circuit. The cycles are returned in a set. Each cycle in the set specifies the start node
+    // for the cycle and an ordered list of directed edges that specifies the subsequent nodes in
+    // the cycle's path along with the weights of each of those edges.
+    public static <T> Set<Cycle<T>> findCycles( DirectedGraph<T> g ) {
+        return findCyclesOfMaxSize( g, Integer.MAX_VALUE );
     }
 
-    // Similar to CircuitFInder.findCircuits except this only returns circuits that are at most the
+    // Similar to CycleFinder.findCycles except this only returns cycles that are at most the
     // given size.
-    public static <T> Set<List<Node<T>>> findCircuitsOfMaxSize( DirectedGraph<T> g , int maxSize ) {
-        CircuitFinder<T> finder = new CircuitFinder<>();
-        return finder.findCircuitsInner( g, maxSize );
+    public static <T> Set<Cycle<T>> findCyclesOfMaxSize( DirectedGraph<T> g , int maxSize ) {
+        CycleFinder<T> finder = new CycleFinder<>();
+        return finder.findCyclesInner( g, maxSize );
     }
 
-    private CircuitFinder() {
+    private CycleFinder() {
     }
 
-    private Set<List<Node<T>>> findCircuitsInner( DirectedGraph<T> g, int maxSize ) {
+    private Set<Cycle<T>> findCyclesInner( DirectedGraph<T> g, int maxSize ) {
         int s = 1;
         Set<Node<T>> nodes = g.getNodes();
-        Set<List<Node<T>>> circuits = new HashSet<>();
+        Set<Cycle<T>> cycles = new HashSet<>();
 
         for( Node<T> v : nodes ) {
             blocked.put( v, false );
@@ -51,7 +52,7 @@ public class CircuitFinder<T> {
             LeastScc<T> leastScc = getLeastScc( g, s );
 
             if( leastScc != null ) {
-                Map<Node<T>, Set<Node<T>>> AK = leastScc.getSuccessors();
+                Map<Node<T>, Set<DirectedEdge<T>>> AK = leastScc.getOutgoingEdges();
                 s = leastScc.getLeastId();
 
                 for( Node<T> i : AK.keySet() ) {
@@ -59,7 +60,7 @@ public class CircuitFinder<T> {
                     B.get( i ).clear();
                 }
 
-                circuit( g.getNodeFromId( s ), s, maxSize, AK, circuits );
+                circuit( g.getNodeFromId( s ), s, maxSize, AK, cycles );
                 s++;
             }
             else {
@@ -67,52 +68,54 @@ public class CircuitFinder<T> {
             }
         }
 
-        return circuits;
+        return cycles;
     }
 
-    private boolean circuit( Node<T> v, int s, int maxSize, Map<Node<T>, Set<Node<T>>> AK, Set<List<Node<T>>> circuits ) {
+    private boolean circuit( Node<T> v, int s, int maxSize, Map<Node<T>, Set<DirectedEdge<T>>> AK, Set<Cycle<T>> cycles ) {
         boolean f = false;
-        stack.push( v );
         blocked.put( v, true );
 
-        Set<Node<T>> AKv = AK.get( v );
-        for( Node<T> w : AKv ) {
+        Set<DirectedEdge<T>> AKv = AK.get( v );
+        for( DirectedEdge<T> edge : AKv ) {
+            pathStack.push( edge );
+            Node<T> w = edge.getTarget();
+
             if( w.getId() == s ) {
                 // ArrayDeque, when we push/pop, works at the head of the deque. This means that when we iterate
                 // through the stack by default, it goes from top to bottom. We want bottom to top to get the
-                // actual directed path traversed to form this circuit. This is why re-add the "last" element
-                // to our result list -- that represents the initial starting node that we used when forming this
-                // circuit.
-                List<Node<T>> result = new ArrayList<>();
-                stack.descendingIterator().forEachRemaining( result::add );
-                result.add( stack.getLast() );
-                circuits.add( result );
+                // actual directed path traversed to form this cycle.
+                List<DirectedEdge<T>> path = new ArrayList<>();
+                pathStack.descendingIterator().forEachRemaining( path::add );
+                Cycle result = new Cycle<>( w, path );
+                cycles.add( result );
                 f = true;
             }
-            else if( stack.size() == maxSize ) {
+            else if( pathStack.size() == maxSize ) {
                 // We set f to true because if we break out because of cycle size restrictions, we don't want the
                 // nodes we've already seen to remain blocked. It's possible they could be used in an alternate
                 // path that yields a cycle.
+                pathStack.pop();
                 f = true;
                 break;
             }
-            else if( !blocked.get( w ) && circuit( w, s, maxSize, AK, circuits ) ) {
+            else if( !blocked.get( w ) && circuit( w, s, maxSize, AK, cycles ) ) {
                 f = true;
             }
+
+            pathStack.pop();
         }
 
         if( f ) {
             unblock( v );
         }
         else {
-            for( Node<T> w : AKv ) {
-                Set<Node<T>> Bw = B.get( w );
+            for( DirectedEdge<T> edge : AKv ) {
+                Set<Node<T>> Bw = B.get( edge.getTarget() );
                 if( !Bw.contains( v ) )
                     Bw.add( v );
             }
         }
 
-        stack.pop();
         return f;
     }
 
@@ -152,11 +155,11 @@ public class CircuitFinder<T> {
         LeastScc<T> result = null;
 
         if( leastScc != null ) {
-            Map<Node<T>, Set<Node<T>>> successors = new HashMap<>();
+            Map<Node<T>, Set<DirectedEdge<T>>> successors = new HashMap<>();
             for( Node<T> v : leastScc ) {
-                successors.put( v, g.getSuccessorsForNode( v )
+                successors.put( v, g.getOutgoingEdgesForNode( v )
                         .stream()
-                        .filter( n -> n.getId() >= s && leastSccFinal.contains( n ) )
+                        .filter( e -> e.getTarget().getId() >= s && leastSccFinal.contains( e.getTarget() ) )
                         .collect( Collectors.toSet() ) );
             }
 
@@ -168,19 +171,19 @@ public class CircuitFinder<T> {
 
     // Used to store the least strongly connected component found for each subgraph induced by
     // Johnson's algorithm. Each instance of this class stores both the map going from each node in
-    // the least SCC to its list of successors and the ID of the node in the least SCC that has the
+    // the least SCC to its list of outgoingEdges and the ID of the node in the least SCC that has the
     // lowest valued ID.
     private class LeastScc<T> {
-        private Map<Node<T>, Set<Node<T>>> successors;
+        private Map<Node<T>, Set<DirectedEdge<T>>> outgoingEdges;
         private int leastId;
 
-        LeastScc( Map<Node<T>, Set<Node<T>>> successors, int leastId ) {
-            this.successors = successors;
+        LeastScc( Map<Node<T>, Set<DirectedEdge<T>>> outgoingEdges, int leastId ) {
+            this.outgoingEdges = outgoingEdges;
             this.leastId = leastId;
         }
 
-        Map<Node<T>, Set<Node<T>>> getSuccessors() {
-            return successors;
+        Map<Node<T>, Set<DirectedEdge<T>>> getOutgoingEdges() {
+            return outgoingEdges;
         }
 
         int getLeastId() {
