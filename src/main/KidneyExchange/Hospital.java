@@ -40,6 +40,10 @@ public class Hospital {
         return pairs.remove(pair);
     }
 
+    public boolean hasPair(ExchangePair pair) {
+        return pairs.contains(pair);
+    }
+
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append("Hospital: " + hospitalId + ", maxSurgeries=" + maxSurgeries + "\n");

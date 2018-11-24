@@ -5,28 +5,31 @@ public class ExchangePair {
     private final Participant donor;
     private final Participant receiver;
     private final int pairId;
+    // Hospital that the ExchangePair currently resides in
+    private int currentHospital;
 
-    public ExchangePair(KidneyType donorType, KidneyType receiverType, int id) {
+    public ExchangePair(KidneyType donorType, KidneyType receiverType, int pairId, int currentHospital) {
         this.donor = new Participant(donorType);
         this.receiver = new Participant(receiverType);
-        this.pairId = id;
+        this.pairId = pairId;
+        this.currentHospital = currentHospital;
     }
 
-    // Accessors
-    public Participant getDonor() {
-        return donor;
-    }
-
+    // Accessors and modifiers
     public KidneyType getDonorType() {
         return donor.getType();
     }
 
-    public Participant getReceiver() {
-        return receiver;
-    }
-
     public KidneyType getReceiverType() {
         return receiver.getType();
+    }
+
+    public int getCurrentHospital() {
+        return currentHospital;
+    }
+
+    public void setCurrentHospital(int currentHospital) {
+        this.currentHospital = currentHospital;
     }
 
     public int getPairId() {

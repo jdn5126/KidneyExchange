@@ -14,29 +14,29 @@ public class KidneyExchangeHelper {
     private static KidneyType[] kidneyTypes = KidneyType.values();
 
     // Helper function for creating random ExchangePair
-    public static ExchangePair randomExchangePair() {
+    public static ExchangePair randomExchangePair(int hospitalId) {
         KidneyType donorType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
         KidneyType receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
         // Avoid creating ExchangePair with matching kidney types
         while(donorType == receiverType) {
             receiverType = kidneyTypes[rand.nextInt(kidneyTypes.length)];
         }
-        return new ExchangePair(donorType, receiverType, ++participantId);
+        return new ExchangePair(donorType, receiverType, ++participantId, hospitalId);
     }
 
     // Helper function for adding random ExchangePair to hospital
     public static void addRandomExchangePair(Hospital hospital) {
-        ExchangePair pair = KidneyExchangeHelper.randomExchangePair();
+        ExchangePair pair = KidneyExchangeHelper.randomExchangePair(hospital.getHospitalId());
         System.out.println("INCREMENTAL: adding " + pair.toString() + " to hospital " + hospital.getHospitalId());
         hospital.addPair(pair);
     }
 
     // Helper function for removing random ExchangePair from hospital
-    public static void delRandomExchangePair(Hospital hospital) {
+    public static ExchangePair delRandomExchangePair(Hospital hospital) {
         int index = rand.nextInt(hospital.getSize());
         ExchangePair pair = hospital.getPairs().get(index);
-        System.out.println("INCREMENTAL: removing " + pair.toString() + " from hospital " + hospital.getHospitalId());
-        hospital.removePair(pair);
+        System.out.println("INCREMENTAL: removing " + pair.toString() + " from hospital " + pair.getCurrentHospital());
+        return pair;
     }
 
     // Helper function for creating Hospital
@@ -45,7 +45,7 @@ public class KidneyExchangeHelper {
 
         // Randomly assign ExchangePairs to Hospital
         for(int i=0; i < numPairs; i++) {
-            hospital.addPair(randomExchangePair());
+            hospital.addPair(randomExchangePair(hospitalId));
         }
         return hospital;
     }
@@ -67,7 +67,7 @@ public class KidneyExchangeHelper {
     }
 
     // Helper function for performing greedy matching algorithm
-    public static HashMap<ExchangePair, ExchangePair> greedyMatches(Hospital hospital, DirectedGraph graph) {
+    public static ArrayList<HashMap<ExchangePair, ExchangePair>> greedyMatches(Hospital hospital, DirectedGraph graph) {
         // Greedy matching algorithm is implemented as a variant of the Top Trading Cycle algorithm.
         //     1. Select unmatched node from graph.
         //     2. Use DFS from node to try to find first cycle of length less than
@@ -80,7 +80,7 @@ public class KidneyExchangeHelper {
         if(hospital.getSize() == 0) {
             return null;
         }
-        HashMap<ExchangePair, ExchangePair> matches = new HashMap<>();
+        ArrayList<HashMap<ExchangePair, ExchangePair>> matches = new ArrayList<>();
         int remainingSlots = hospital.getMaxSurgeries();
 
         // Add nodes to array to allow iteration while mutating graph. Iterating guarantees
@@ -106,14 +106,16 @@ public class KidneyExchangeHelper {
                 // is too large. Either way, move to the next node and run DFS.
                 continue;
             } else {
-                // Mark matches and remove cycle from graph
+                // Record matches and remove cycle from graph
                 remainingSlots -= cycleSize;
+                HashMap<ExchangePair, ExchangePair> pairCycle = new HashMap<>();
                 for(int i=0; i < cycleSize; i++) {
                     DirectedGraph.Node startNode = cycle.get(i);
                     ExchangePair match = cycle.get((i+1) % cycleSize).getPair();
-                    matches.put(startNode.getPair(), match);
+                    pairCycle.put(startNode.getPair(), match);
                     graph.removeNode(startNode);
                 }
+                matches.add(pairCycle);
             }
         }
         return matches;
@@ -160,20 +162,20 @@ public class KidneyExchangeHelper {
         visiting.add(currentNode);
         travelMap.put(currentNode, previousNode);
 
-        for(ExchangePair neighborPair: currentNode.getNeighbors()) {
+        for(ExchangePair neighborPair : currentNode.getNeighbors()) {
             DirectedGraph.Node neighbor = graph.getNode(neighborPair);
             // If neighbor is in visiting, cycle has been formed
-            if(visiting.contains(neighbor)) {
+            if (visiting.contains(neighbor)) {
                 // Return node that starts and ends cycle
                 travelMap.put(neighbor, currentNode);
                 return neighbor;
-            } else if(finished.contains(neighbor)) {
+            } else if (finished.contains(neighbor)) {
                 // Neighbor is not part of cycle, so continue to next neighbor.
                 continue;
             } else {
                 DirectedGraph.Node cycleRoot = cycleRecurse(graph, neighbor, currentNode,
-                                                            visiting, finished, travelMap);
-                if(cycleRoot != null) {
+                        visiting, finished, travelMap);
+                if (cycleRoot != null) {
                     return cycleRoot;
                 }
             }
@@ -185,12 +187,16 @@ public class KidneyExchangeHelper {
     }
 
     // Helper function for simulating an ExchangePair dropping out after already matched
-    public static ExchangePair delRandomMatchedPair(HashMap<ExchangePair, ExchangePair> matches) {
-        int randIndex = rand.nextInt(matches.size());
+    public static ExchangePair delRandomMatchedPair(ArrayList<HashMap<ExchangePair, ExchangePair>> matches) {
+        // Get random cycle from list of cycles
+        int randCycle = rand.nextInt(matches.size());
+        HashMap<ExchangePair, ExchangePair> cycle = matches.get(randCycle);
+
+        // Select random pair from cycle for removal
+        int randIndex = rand.nextInt(cycle.size());
         int x = 0;
-        // Select random pair for HashMap by iterating to random entry in keySet
         ExchangePair pair = null;
-        for(ExchangePair temp: matches.keySet()) {
+        for(ExchangePair temp: cycle.keySet()) {
             if(x == randIndex) {
                 pair = temp;
                 break;
@@ -199,9 +205,9 @@ public class KidneyExchangeHelper {
         }
 
         // Remove ExchangePairs in cycle
-        while(matches.containsKey(pair)) {
-            ExchangePair partner = matches.get(pair);
-            matches.remove(pair);
+        while(cycle.containsKey(pair)) {
+            ExchangePair partner = cycle.get(pair);
+            cycle.remove(pair);
             pair = partner;
         }
         return pair;
