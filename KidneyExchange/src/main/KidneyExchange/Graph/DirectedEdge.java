@@ -5,22 +5,22 @@ import java.util.Objects;
 // A directed edge points to a particular target Node<T> and has an associated weight.
 public class DirectedEdge<T> {
     private Node<T> target;
-    private double weight;
+    private int weight;
 
-    public DirectedEdge( Node<T> target, double weight ) {
+    public DirectedEdge( Node<T> target, int weight ) {
         this.target = target;
         this.weight = weight;
     }
 
     public DirectedEdge( Node<T> target ) {
-        this( target, 1.0 );
+        this( target, 1 );
     }
 
     public Node<T> getTarget() {
         return target;
     }
 
-    public double getWeight() {
+    public int getWeight() {
         return weight;
     }
 

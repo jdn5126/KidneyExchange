@@ -19,7 +19,7 @@ public class CycleFinderTest {
         Cycle<Integer> cycle1 = new Cycle<>( n1,
                 Arrays.asList(
                         new DirectedEdge<>( n2 ),
-                        new DirectedEdge<>( n1, 2.0 )
+                        new DirectedEdge<>( n1, 2 )
                 )
         );
 

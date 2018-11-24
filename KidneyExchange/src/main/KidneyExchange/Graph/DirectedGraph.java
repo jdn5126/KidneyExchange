@@ -17,10 +17,10 @@ public class DirectedGraph<T> {
     private Map<Node<T>, Set<DirectedEdge<T>>> successors = new HashMap<>();
 
     public void addEdge( T from, T to ) {
-        addEdgeWithWeight( from, to, 1.0 );
+        addEdgeWithWeight( from, to, 1 );
     }
 
-    public void addEdgeWithWeight( T from, T to, double weight ) {
+    public void addEdgeWithWeight( T from, T to, int weight ) {
         Node<T> fromNode = dataToNodes.computeIfAbsent( from, k -> {
             Node<T> n = createNode( from );
             nodes.add( n );
