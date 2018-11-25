@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class KidneyExchange {
     private static final int DEFAULT_NUM_HOSPITALS = 3;
     private static final int DEFAULT_NUM_PAIRS = 5;
-    private static final int DEFAULT_MAX_SURGEERIES = 5;
+    private static final int DEFAULT_MAX_SURGERIES = 5;
     private static final int DEFAULT_NUM_ROUNDS = 4;
 
     // Main function controlling behavior of kidney exchange
@@ -25,7 +25,7 @@ public class KidneyExchange {
         // Create Hospitals participating in Kidney Exchange
         int numHospitals = (cli.numHospitals == null) ? DEFAULT_NUM_HOSPITALS : cli.numHospitals;
         int numPairs = (cli.numPairs == null) ? DEFAULT_NUM_PAIRS : cli.numPairs;
-        int maxSurgeries = (cli.maxSurgeries == null) ? DEFAULT_MAX_SURGEERIES : cli.maxSurgeries;
+        int maxSurgeries = (cli.maxSurgeries == null) ? DEFAULT_MAX_SURGERIES : cli.maxSurgeries;
 
         Hospital[] hospitals = new Hospital[numHospitals];
         for(int i=0; i < numHospitals; i++) {
