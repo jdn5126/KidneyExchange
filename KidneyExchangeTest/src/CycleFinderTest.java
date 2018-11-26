@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 public class CycleFinderTest {
     // Finds all circuits in a simple test graph.

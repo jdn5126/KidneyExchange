@@ -14,7 +14,6 @@ public class Program {
             );
         }
 
-
         System.out.println();
         {
             DirectedGraph<Integer> g = TestData.createG1();

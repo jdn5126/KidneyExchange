@@ -9,7 +9,6 @@ public class KidneyExchangeHelper {
     // Helper variables that are initialized when class is first loaded
     static int hospitalId = 0;
     static int participantId = 0;
-    // TODO: Log random seed and allow it to be set for reproducibility
     static Random rand = new Random();
     private static KidneyType[] kidneyTypes = KidneyType.values();
 
