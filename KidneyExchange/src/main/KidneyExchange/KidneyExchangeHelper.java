@@ -9,7 +9,6 @@ public class KidneyExchangeHelper {
     // Helper variables that are initialized when class is first loaded
     static int hospitalId = 0;
     static int participantId = 0;
-    // TODO: Log random seed and allow it to be set for reproducibility
     static Random rand = new Random();
     private static KidneyType[] kidneyTypes = KidneyType.values();
 
@@ -103,9 +102,9 @@ public class KidneyExchangeHelper {
                 continue;
             }
             // Find first cycle doing DFS starting from node
-            ArrayList<DirectedGraph.Node> cycle = findCycle(graph, node);
+            ArrayList<DirectedGraph.Node> cycle = findCycle(graph, node, remainingSlots);
             int cycleSize = cycle.size();
-            if(cycleSize == 0 || cycleSize > remainingSlots) {
+            if(cycleSize == 0) {
                 // Either no cycle exists along the traversal from this node or the cycle
                 // is too large. Either way, move to the next node and run DFS.
                 continue;
@@ -126,21 +125,22 @@ public class KidneyExchangeHelper {
     }
 
     // Helper function for finding cycle within graph starting at root
-    public static ArrayList<DirectedGraph.Node> findCycle(DirectedGraph graph, DirectedGraph.Node root) {
+    public static ArrayList<DirectedGraph.Node> findCycle(DirectedGraph graph, DirectedGraph.Node root,
+                                                          int remainingSlots) {
         ArrayList<DirectedGraph.Node> cycle = new ArrayList<>();
 
         // cycleRecurse will store the progression of the DFS-walk in travelMap
-        HashMap<DirectedGraph.Node, DirectedGraph.Node> travelMap = new HashMap<>();
+        HashMap<DirectedGraph.Node, TravelMapVal> travelMap = new HashMap<>();
         // If a cycle was found, cycleRoot will be set to the node starting and ending the cycle.
-        DirectedGraph.Node cycleRoot = cycleRecurse(graph, root, null,
-                                                    new ArrayList<>(), new ArrayList<>(), travelMap);
+        DirectedGraph.Node cycleRoot = cycleRecurse(graph, root, null, new ArrayList<>(),
+                                                    new ArrayList<>(), travelMap, 1, remainingSlots);
         if(cycleRoot != null) {
             // Build cycle from travelMap
-            DirectedGraph.Node prev = travelMap.get(cycleRoot);
+            DirectedGraph.Node prev = travelMap.get(cycleRoot).getNode();
             while(prev != cycleRoot) {
                 // Add each node to front of list
                 cycle.add(0, prev);
-                prev = travelMap.get(prev);
+                prev = travelMap.get(prev).getNode();
             }
             cycle.add(0, cycleRoot);
         }
@@ -153,32 +153,40 @@ public class KidneyExchangeHelper {
                                                   DirectedGraph.Node previousNode,
                                                   ArrayList<DirectedGraph.Node> visiting,
                                                   ArrayList<DirectedGraph.Node> finished,
-                                                  HashMap<DirectedGraph.Node, DirectedGraph.Node> travelMap) {
+                                                  HashMap<DirectedGraph.Node, TravelMapVal> travelMap,
+                                                  int step,
+                                                  int remainingSlots) {
         // Algorithm to find cycle operates as follows:
         //     1. Add current node to visiting set and mark how we got to this node in travel map
         //     2. For each neighbor of node:
         //            2a. If neighbor is in visiting set, then neighbor is the root of the cycle.
-        //                Map cycleRoot as introduced by currentNode so that iterating backward in
-        //                travelMap until cycleRoot yields cycle.
+        //                If cycle is not longer than remainingSlots, map cycleRoot as introduced by
+        //                currentNode so that iterating backward in travelMap until cycleRoot yields cycle.
         //            2a. Else if neighbor is in finished set, skip neighbor.
         //            2c. Else continue at 1 with current node updated as neighbor
         // Add current node to visiting and to travel map
         visiting.add(currentNode);
-        travelMap.put(currentNode, previousNode);
+        travelMap.put(currentNode, new TravelMapVal(previousNode, step));
 
         for(ExchangePair neighborPair : currentNode.getNeighbors()) {
             DirectedGraph.Node neighbor = graph.getNode(neighborPair);
             // If neighbor is in visiting, cycle has been formed
             if (visiting.contains(neighbor)) {
-                // Return node that starts and ends cycle
-                travelMap.put(neighbor, currentNode);
-                return neighbor;
+                // Cycle length cannot exceed remainingSlots, otherwise skip neighbor
+                int startStep = travelMap.get(neighbor).getStep();
+                if (step - startStep >= remainingSlots) {
+                    continue;
+                } else {
+                    // Return node that starts and ends cycle
+                    travelMap.put(neighbor, new TravelMapVal(currentNode, step + 1));
+                    return neighbor;
+                }
             } else if (finished.contains(neighbor)) {
                 // Neighbor is not part of cycle, so continue to next neighbor.
                 continue;
             } else {
                 DirectedGraph.Node cycleRoot = cycleRecurse(graph, neighbor, currentNode,
-                        visiting, finished, travelMap);
+                        visiting, finished, travelMap, step + 1, remainingSlots);
                 if (cycleRoot != null) {
                     return cycleRoot;
                 }
