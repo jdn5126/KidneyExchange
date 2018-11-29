@@ -106,9 +106,7 @@ public class KidneyExchangeTest {
     }
 
     // Build a more complicated example (two hospitals is sufficient) to test resiliency
-    @Test
-    public void runKidneyExchangeTest5() {
-        ConsoleLogger.setQuiet(true);
+    public void runKidneyExchangeTest5(MatchingAlgorithm matchingAlgorithm) {
         int hospitalId = 0;
         int pairId = 0;
 
@@ -136,7 +134,7 @@ public class KidneyExchangeTest {
         // Round 3: Hospital 1 can only perform two surgeries at a time, so will be left with four pairs
         //          Hospital 2 still waits for remaining pair to be requested
         Hospital[] hospitals = { hospital1, hospital2 };
-        KidneyExchange.runKidneyExchange(3, hospitals, MatchingAlgorithm.GREEDY, false);
+        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false);
         Assertions.assertEquals(hospital1.getSize(), 4);
         Assertions.assertEquals(hospital2.getSize(), 1);
     }
@@ -150,7 +148,7 @@ public class KidneyExchangeTest {
             runKidneyExchangeTest2(matchingAlgorithm);
             runKidneyExchangeTest3(matchingAlgorithm);
             runKidneyExchangeTest4(matchingAlgorithm);
-            //runKidneyExchangeTest5(matchingAlgorithm);
+            runKidneyExchangeTest5(matchingAlgorithm);
         }
     }
 
