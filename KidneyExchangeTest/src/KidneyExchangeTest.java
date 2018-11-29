@@ -71,7 +71,6 @@ public class KidneyExchangeTest {
 
         // No one will be able to match in Round 1, Hospital 1 will acquire Hospital 2 pair in Round 2,
         // Hospital 1 will acquire Hospital 3 pair in round 3, pairs will be matched in round 4
-        // pairs will be matched in Round 3
         Hospital[] hospitals = { hospital1, hospital2, hospital3 };
         KidneyExchange.runKidneyExchange(4, hospitals, matchingAlgorithm, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
