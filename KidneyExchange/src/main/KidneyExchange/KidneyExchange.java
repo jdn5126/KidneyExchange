@@ -5,6 +5,7 @@ import com.beust.jcommander.JCommander;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class KidneyExchange {
     private static final int DEFAULT_NUM_HOSPITALS = 3;
@@ -52,6 +53,12 @@ public class KidneyExchange {
     private static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm) {
         ConsoleLogger.println( "Using " + matchingAlgorithm + " algorithm" );
 
+        Stopwatch runWatch = new Stopwatch();
+        Stopwatch roundWatch = new Stopwatch();
+        List<Long> roundDurations = new ArrayList<>( numRounds );
+
+        runWatch.start();
+
         // Each round of the kidney exchange works as follows:
         //     1. Each hospital creates a directed graph amongst ExchangePairs that it
         //        is aware of, where an edge from pair i to pair j indicates that pair
@@ -87,8 +94,10 @@ public class KidneyExchange {
                 ConsoleLogger.print(hospital);
 
                 // Get list of cycles
+                roundWatch.start();
                 ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.GREEDY) ?
                         KidneyExchangeHelper.greedyMatches(hospital) : BasicCycleCoverMatcher.findMatches(hospital);
+                roundDurations.add( roundWatch.stop() );
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
                 if(matches != null && matches.size() > 0 && KidneyExchangeHelper.rand.nextInt(8) == 7) {
@@ -149,6 +158,16 @@ public class KidneyExchange {
                 }
                 ConsoleLogger.print("\n");
             }
+        }
+
+        long runDuration = runWatch.stop();
+        double runDurationSec = runDuration / 1e9;
+        System.out.println( "Total run duration in nanoseconds (seconds): " + runDuration + " (" + runDurationSec + ")"  );
+        System.out.println( "Durations per round in nanoseconds (seconds)" );
+        for( int iRound = 0; iRound < roundDurations.size(); ++iRound ) {
+            long roundDuration = roundDurations.get( iRound );
+            double roundDurationSec = roundDuration / 1e9;
+            System.out.println( "    Round "  + (iRound + 1) + ": " + roundDuration + " (" + roundDurationSec + ")" );
         }
     }
 }
