@@ -30,7 +30,7 @@ public class KidneyExchangeHelper {
     // Helper function for adding random ExchangePair to hospital
     public static void addRandomExchangePair(Hospital hospital) {
         ExchangePair pair = KidneyExchangeHelper.randomExchangePair(hospital.getHospitalId());
-        System.out.println("INCREMENTAL: adding " + pair.toString() + " to hospital " + hospital.getHospitalId());
+        ConsoleLogger.println("INCREMENTAL: adding " + pair.toString() + " to hospital " + hospital.getHospitalId());
         hospital.addPair(pair);
     }
 
@@ -38,7 +38,7 @@ public class KidneyExchangeHelper {
     public static ExchangePair delRandomExchangePair(Hospital hospital) {
         int index = rand.nextInt(hospital.getSize());
         ExchangePair pair = hospital.getPairs().get(index);
-        System.out.println("INCREMENTAL: removing " + pair.toString() + " from hospital " + pair.getCurrentHospital());
+        ConsoleLogger.println("INCREMENTAL: removing " + pair.toString() + " from hospital " + pair.getCurrentHospital());
         return pair;
     }
 
@@ -73,8 +73,8 @@ public class KidneyExchangeHelper {
     public static ArrayList<HashMap<ExchangePair, ExchangePair>> greedyMatches(Hospital hospital) {
         // Create directed graph from ExchangePairs
         DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-        System.out.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
-        System.out.print(graph);
+        ConsoleLogger.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
+        ConsoleLogger.print(graph);
 
         // Greedy matching algorithm is implemented as a variant of the Top Trading Cycle algorithm.
         //     1. Select unmatched node from graph.

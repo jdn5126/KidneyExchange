@@ -19,5 +19,8 @@ public class CommandLine {
     Integer numRounds;
 
     @Parameter( names={ "--algorithm", "-a" }, description = "Matching algorithm to use. Must be either greedy or ilp." )
-    MatchingAlgorithm matchingAlgorithm = MatchingAlgorithm.Greedy;
+    MatchingAlgorithm matchingAlgorithm = MatchingAlgorithm.GREEDY;
+
+    @Parameter( names={ "--quiet", "-q" }, description = "Disable console output" )
+    boolean quiet = false;
 }

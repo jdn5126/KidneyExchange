@@ -1,5 +1,6 @@
 package KidneyExchange.LP;
 
+import KidneyExchange.ConsoleLogger;
 import KidneyExchange.ExchangePair;
 import KidneyExchange.Graph.*;
 import KidneyExchange.Hospital;
@@ -29,11 +30,11 @@ public class BasicCycleCoverMatcher {
         // max cycle length.
         List<Cycle<ExchangePair>> cycles = CycleFinder.findCyclesOfMaxSize( graph, hospital.getMaxSurgeries() );
 
-        System.out.println();
-        System.out.println( "Directed graph used in LP" );
-        System.out.println( graph );
+        ConsoleLogger.println();
+        ConsoleLogger.println( "Directed graph used in LP" );
+        ConsoleLogger.println( graph );
         for( Cycle<ExchangePair> cycle : cycles ) {
-            System.out.println( cycle );
+            ConsoleLogger.println( cycle );
         }
 
         // Build a new optimization model that looks to get the max weighted cycle cover in our hospital graph.
@@ -61,7 +62,7 @@ public class BasicCycleCoverMatcher {
                     .toArray( BoolVar[]::new );
 
             if( nodeInCycleVars.length > 0 ) {
-                System.out.println( "Vertex constraint for node " + node.getId() + " with " + nodeInCycleVars.length + " variables" );
+                ConsoleLogger.println( "Vertex constraint for node " + node.getId() + " with " + nodeInCycleVars.length + " variables" );
                 model.sum( nodeInCycleVars, "<=", 1 ).post();
             }
         }
@@ -71,9 +72,9 @@ public class BasicCycleCoverMatcher {
         Solver solver = model.getSolver();
         Solution solution = solver.findOptimalSolution( maxWeightVar, maximize );
 
-        // TODO: Remove me or wrap in an eventual if( debug ) sort of guard.
-        solver.printStatistics();
-        System.out.println();
+        if( !ConsoleLogger.getQuiet() )
+            solver.printStatistics();
+        ConsoleLogger.println();
 
         // This shouldn't really happen, but in case it does, fail hard and fail fast.
         if( solution == null )
@@ -83,7 +84,7 @@ public class BasicCycleCoverMatcher {
         ArrayList<HashMap<ExchangePair, ExchangePair>> matches = new ArrayList<>();
         for( int iCycle = 0; iCycle < cycleVars.length; ++iCycle ) {
             if( solution.getIntVal( cycleVars[iCycle] ) == 1 ) {
-                System.out.println( "Cycle + " + (iCycle + 1) + " selected. " + cycles.get( iCycle ) );
+                ConsoleLogger.println( "Cycle " + (iCycle + 1) + " selected. " + cycles.get( iCycle ) );
                 HashMap<ExchangePair, ExchangePair> cycleMatches = new HashMap<>();
                 Cycle<ExchangePair> cycle = cycles.get( iCycle );
                 ExchangePair fromPair = cycle.getStartNode().unwrap();
