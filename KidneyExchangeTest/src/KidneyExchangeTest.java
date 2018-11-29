@@ -108,6 +108,7 @@ public class KidneyExchangeTest {
     // Build a more complicated example (two hospitals is sufficient) to test resiliency
     @Test
     public void runKidneyExchangeTest5() {
+        ConsoleLogger.setQuiet(true);
         int hospitalId = 0;
         int pairId = 0;
 
@@ -135,13 +136,15 @@ public class KidneyExchangeTest {
         // Round 3: Hospital 1 can only perform two surgeries at a time, so will be left with four pairs
         //          Hospital 2 still waits for remaining pair to be requested
         Hospital[] hospitals = { hospital1, hospital2 };
-        KidneyExchange.runKidneyExchange(3, hospitals, MatchingAlgorithm.Greedy, false);
+        KidneyExchange.runKidneyExchange(3, hospitals, MatchingAlgorithm.GREEDY, false);
         Assertions.assertEquals(hospital1.getSize(), 4);
         Assertions.assertEquals(hospital2.getSize(), 1);
     }
 
     @Test
     public void runKidneyExchangeTests() {
+        // Suppress console output for tests
+        ConsoleLogger.setQuiet(true);
         for(MatchingAlgorithm matchingAlgorithm: MatchingAlgorithm.values()) {
             runKidneyExchangeTest1(matchingAlgorithm);
             runKidneyExchangeTest2(matchingAlgorithm);
@@ -154,6 +157,8 @@ public class KidneyExchangeTest {
     // Build a scale test to prove that algorithm can scale
     @Test
     public void runKidneyExchangeScaleTest() {
+        // Suppress console output for testing
+        ConsoleLogger.setQuiet(true);
         int hospitalId = 0;
         int pairId = 0;
 
@@ -175,7 +180,7 @@ public class KidneyExchangeTest {
 
         Hospital[] hospitals = { hospital1, hospital2 };
         // Hospital 1 will finish after 50 rounds, while Hospital 2 will finish in 25 rounds
-        KidneyExchange.runKidneyExchange(50, hospitals, MatchingAlgorithm.Greedy, false);
+        KidneyExchange.runKidneyExchange(50, hospitals, MatchingAlgorithm.GREEDY, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
         Assertions.assertEquals(hospital2.getSize(), 0);
     }

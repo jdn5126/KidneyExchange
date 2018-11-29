@@ -121,7 +121,7 @@ public class KidneyExchange {
                         }
                         if(localCycle) {
                             // Perform surgeries and remove pairs from all hospitals
-                            System.out.println("----------------");
+                            ConsoleLogger.println("----------------");
                             for (ExchangePair pair : cycle.keySet()) {
                                 ConsoleLogger.println(pair.toString() + " -> " + cycle.get(pair).toString());
                                 for (Hospital h : hospitals) {
@@ -130,7 +130,7 @@ public class KidneyExchange {
                             }
                         } else if(highestRanked) {
                             // Acquire patients from lower ranked hospitals for matching next round.
-                            System.out.println("----------------");
+                            ConsoleLogger.println("----------------");
                             for(ExchangePair pair : cycle.keySet()) {
                                 if(pair.getCurrentHospital() != hospital.getHospitalId()) {
                                     ConsoleLogger.println("Moving " + pair.toString() + " from hospital " +
@@ -146,7 +146,7 @@ public class KidneyExchange {
                             }
                         }
                     }
-                    System.out.println("----------------");
+                    ConsoleLogger.println("----------------");
                 }
                 // Inform higher ranked peer of unmatched pairs to be accounted for in next round.
                 // In other words, all peer information will be distributed after numHospital rounds.
