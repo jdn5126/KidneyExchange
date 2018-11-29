@@ -42,10 +42,10 @@ public class KidneyExchange {
 
         // Run the kidney exchange for some fixed number of rounds
         int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
-        runKidneyExchange(numRounds, hospitals);
+        runKidneyExchange(numRounds, hospitals, true);
     }
 
-    private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {
+    public static void runKidneyExchange(int numRounds, Hospital[] hospitals, boolean incremental) {
         // Each round of the kidney exchange works as follows:
         //     1. Each hospital creates a directed graph amongst ExchangePairs that it
         //        is aware of, where an edge from pair i to pair j indicates that pair
@@ -64,18 +64,20 @@ public class KidneyExchange {
             System.out.println("\nRound: " + i + "\n");
             for(Hospital hospital : hospitals) {
                 // INCREMENTAL SETTING #1: Add/remove random pair from hospital 2/5 of the time
-                switch(KidneyExchangeHelper.rand.nextInt(5)) {
-                    case 1: // add pair
-                        KidneyExchangeHelper.addRandomExchangePair(hospital);
-                        break;
-                    case 2: // remove random pair that hospital is aware of
-                        if(hospital.getSize() > 0) {
-                            ExchangePair randPair = KidneyExchangeHelper.delRandomExchangePair(hospital);
-                            for (Hospital h : hospitals) {
-                                h.removePair(randPair);
+                if(incremental) {
+                    switch (KidneyExchangeHelper.rand.nextInt(5)) {
+                        case 1: // add pair
+                            KidneyExchangeHelper.addRandomExchangePair(hospital);
+                            break;
+                        case 2: // remove random pair that hospital is aware of
+                            if (hospital.getSize() > 0) {
+                                ExchangePair randPair = KidneyExchangeHelper.delRandomExchangePair(hospital);
+                                for (Hospital h : hospitals) {
+                                    h.removePair(randPair);
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
                 // Print Hospital
                 System.out.print(hospital);
@@ -94,7 +96,8 @@ public class KidneyExchange {
                                                                                                             graph);
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
-                if(matches != null && matches.size() > 0 && KidneyExchangeHelper.rand.nextInt(8) == 7) {
+                if(matches != null && matches.size() > 0 && incremental &&
+                        KidneyExchangeHelper.rand.nextInt(8) == 7) {
                     ExchangePair dropout = KidneyExchangeHelper.delRandomMatchedPair(matches);
                     System.out.println("\n" + dropout.toString() + " has dropped out of matching.");
                     // Remove pair from all hospitals that are aware of pair
