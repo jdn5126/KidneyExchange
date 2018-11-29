@@ -1,6 +1,6 @@
 package KidneyExchange;
 
 public enum MatchingAlgorithm {
-    Greedy,
+    GREEDY,
     ILP
 }

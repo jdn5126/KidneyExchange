@@ -20,6 +20,8 @@ public class KidneyExchange {
                 .build()
                 .parse( args );
 
+        ConsoleLogger.setQuiet( cli.quiet );
+
         if( cli.seed != null )
             KidneyExchangeHelper.setRandomSeed( cli.seed );
 
@@ -36,11 +38,11 @@ public class KidneyExchange {
         }
 
         // Print hospitals participating in KidneyExchange
-        System.out.println("Hospitals participating in kidney exchange: ");
+        ConsoleLogger.println("Hospitals participating in kidney exchange: ");
         for(int i=0; i < numHospitals; i++) {
-            System.out.print(hospitals[i]);
+            ConsoleLogger.print(hospitals[i]);
         }
-        System.out.println();
+        ConsoleLogger.println();
 
         // Run the kidney exchange for some fixed number of rounds
         int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
@@ -48,6 +50,7 @@ public class KidneyExchange {
     }
 
     public static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm, boolean incremental) {
+        ConsoleLogger.println( "Using " + matchingAlgorithm + " algorithm" );
         // Each round of the kidney exchange works as follows:
         //     1. Each hospital creates a directed graph amongst ExchangePairs that it
         //        is aware of, where an edge from pair i to pair j indicates that pair
@@ -63,7 +66,7 @@ public class KidneyExchange {
         //     4. Each hospital informs higher ranked hospital of its unmatched pairs.
 
         for(int i=1; i < (numRounds + 1); i++) {
-            System.out.println("\nRound: " + i + "\n");
+            ConsoleLogger.println("\nRound: " + i + "\n");
             for(Hospital hospital : hospitals) {
                 // INCREMENTAL SETTING #1: Add/remove random pair from hospital 2/5 of the time
                 if(incremental) {
@@ -82,24 +85,24 @@ public class KidneyExchange {
                     }
                 }
                 // Print Hospital
-                System.out.print(hospital);
+                ConsoleLogger.print(hospital);
 
                 // Get list of cycles
-                ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.Greedy) ?
+                ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.GREEDY) ?
                         KidneyExchangeHelper.greedyMatches(hospital) : BasicCycleCoverMatcher.findMatches(hospital);
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
                 if(matches != null && matches.size() > 0 && incremental &&
                         KidneyExchangeHelper.rand.nextInt(8) == 7) {
                     ExchangePair dropout = KidneyExchangeHelper.delRandomMatchedPair(matches);
-                    System.out.println("\n" + dropout.toString() + " has dropped out of matching.");
+                    ConsoleLogger.println("\n" + dropout.toString() + " has dropped out of matching.");
                     // Remove pair from all hospitals that are aware of pair
                     for(Hospital h: hospitals) {
                         h.removePair(dropout);
                     }
                 }
 
-                System.out.println("\nMatches: ");
+                ConsoleLogger.println("\nMatches: ");
                 // For each cycle in matching, perform surgeries if all patients are in this hospital,
                 // otherwise acquire pairs if you are the highest ranking hospital in the cycle.
                 if(matches != null) {
@@ -120,7 +123,7 @@ public class KidneyExchange {
                             // Perform surgeries and remove pairs from all hospitals
                             System.out.println("----------------");
                             for (ExchangePair pair : cycle.keySet()) {
-                                System.out.println(pair.toString() + " -> " + cycle.get(pair).toString());
+                                ConsoleLogger.println(pair.toString() + " -> " + cycle.get(pair).toString());
                                 for (Hospital h : hospitals) {
                                     h.removePair(pair);
                                 }
@@ -130,7 +133,7 @@ public class KidneyExchange {
                             System.out.println("----------------");
                             for(ExchangePair pair : cycle.keySet()) {
                                 if(pair.getCurrentHospital() != hospital.getHospitalId()) {
-                                    System.out.println("Moving " + pair.toString() + " from hospital " +
+                                    ConsoleLogger.println("Moving " + pair.toString() + " from hospital " +
                                             pair.getCurrentHospital() + " to hospital " + hospital.getHospitalId());
                                     // Remove knowledge of pair from all hospitals except new hospital
                                     for(Hospital h: hospitals) {
@@ -155,7 +158,7 @@ public class KidneyExchange {
                         }
                     }
                 }
-                System.out.print("\n");
+                ConsoleLogger.print("\n");
             }
         }
     }
