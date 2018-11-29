@@ -49,8 +49,9 @@ public class BasicCycleCoverMatcher {
 
         // When doing an optimization problem, Choco requires that the objective function is represented by a single
         // variable. For objective functions that incorporate multiple objective variables, that needs to be modeled as
-        // an equality constraint.
-        IntVar maxWeightVar = model.intVar( "maxWeight", 0, IntVar.MAX_INT_BOUND );
+        // an equality constraint. We also need to ensure we don't violate our max surgeries constraint, which means the
+        // the max optimal weight is bounded above by the max surgeries the hospital can perform.
+        IntVar maxWeightVar = model.intVar( "maxWeight", 0, hospital.getMaxSurgeries() );
         model.scalar( cycleVars, weights, "=", maxWeightVar ).post();
 
         // Setup per-node constraints. Each constraint enforces that a given node appears in only one cycle in the
