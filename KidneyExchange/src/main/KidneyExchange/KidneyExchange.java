@@ -2,8 +2,12 @@ package KidneyExchange;
 
 import KidneyExchange.LP.BasicCycleCoverMatcher;
 import com.beust.jcommander.JCommander;
+import com.google.gson.Gson;
 
+import java.io.FileWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,12 +51,15 @@ public class KidneyExchange {
 
         // Run the kidney exchange for some fixed number of rounds
         int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
-        runKidneyExchange(numRounds, hospitals, cli.matchingAlgorithm, true);
+        runKidneyExchange(numRounds, hospitals, cli.matchingAlgorithm, true, cli.test);
     }
 
-    public static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm, boolean incremental) {
+    public static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm,
+                                         boolean incremental, boolean test) {
         ConsoleLogger.println( "Using " + matchingAlgorithm + " algorithm" );
 
+        int numPairsTotal = Arrays.stream( hospitals ).mapToInt( h -> h.getSize() ).sum();
+        int numPairsOperated = 0;
         Stopwatch runWatch = new Stopwatch();
         Stopwatch roundWatch = new Stopwatch();
         List<Long> roundDurations = new ArrayList<>( numRounds );
@@ -80,6 +87,7 @@ public class KidneyExchange {
                 if(incremental) {
                     switch (KidneyExchangeHelper.rand.nextInt(5)) {
                         case 1: // add pair
+                            ++numPairsTotal;
                             KidneyExchangeHelper.addRandomExchangePair(hospital);
                             break;
                         case 2: // remove random pair that hospital is aware of
@@ -134,6 +142,7 @@ public class KidneyExchange {
                             ConsoleLogger.println("----------------");
                             for (ExchangePair pair : cycle.keySet()) {
                                 ConsoleLogger.println(pair.toString() + " -> " + cycle.get(pair).toString());
+                                ++numPairsOperated;
                                 for (Hospital h : hospitals) {
                                     h.removePair(pair);
                                 }
@@ -172,14 +181,31 @@ public class KidneyExchange {
             }
         }
 
-        long runDuration = runWatch.stop();
-        double runDurationSec = runDuration / 1e9;
-        System.out.println( "Total run duration in nanoseconds (seconds): " + runDuration + " (" + runDurationSec + ")"  );
-        System.out.println( "Durations per round in nanoseconds (seconds)" );
-        for( int iRound = 0; iRound < roundDurations.size(); ++iRound ) {
-            long roundDuration = roundDurations.get( iRound );
-            double roundDurationSec = roundDuration / 1e9;
-            System.out.println( "    Round "  + (iRound + 1) + ": " + roundDuration + " (" + roundDurationSec + ")" );
+        if( test ) {
+            long runDuration = runWatch.stop();
+            TestResults results = new TestResults( numPairsOperated, numPairsTotal, runDuration, roundDurations );
+
+            System.out.println( "Operated on " + results.getNumPairsOperated() +
+                    " out of " + results.getNumPairsTotal() +
+                    " pairs (" + results.getOperationPercentage() + "% match rate)" );
+
+            System.out.println( "Total run duration in nanoseconds (seconds): " + results.getRunDurationNs() +
+                    " (" + results.getRunDurationSec() + ")"  );
+            System.out.println( "Durations per round in nanoseconds (seconds)" );
+            for( int iRound = 0; iRound < roundDurations.size(); ++iRound ) {
+                long roundDuration = results.getRoundDurationsNs().get( iRound );
+                double roundDurationSec = results.getRoundDurationsSec().get( iRound );
+                System.out.println( "    Round "  + (iRound + 1) + ": " + roundDuration + " (" + roundDurationSec + ")" );
+            }
+
+            Gson gson = new Gson();
+            try( Writer outputWriter = new FileWriter( "results.json" ) ) {
+                outputWriter.write( gson.toJson( results ) );
+            }
+            catch( Exception ex ) {
+                System.out.println( "Error writing test results." );
+                ex.printStackTrace( System.out );
+            }
         }
     }
 }

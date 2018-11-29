@@ -23,4 +23,7 @@ public class CommandLine {
 
     @Parameter( names={ "--quiet", "-q" }, description = "Disable console output" )
     boolean quiet = false;
+
+    @Parameter( names = { "--test", "-t" }, description = "Show test output and write it to disk" )
+    boolean test = false;
 }

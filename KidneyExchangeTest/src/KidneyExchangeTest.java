@@ -17,7 +17,7 @@ public class KidneyExchangeTest {
 
         // Run single round of kidney exchange and verify that all patients are removed
         Hospital[] hospitals = { hospital1 };
-        KidneyExchange.runKidneyExchange(1, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(1, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
 
         // Create another hospital with 2 surgery slots and a cycle of length 3
@@ -28,7 +28,7 @@ public class KidneyExchangeTest {
 
         // Run single round of kidney exchange and verify that no patients are removed
         hospitals[0] = hospital2;
-        KidneyExchange.runKidneyExchange(1, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(1, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital2.getSize(), 3);
     }
 
@@ -49,7 +49,7 @@ public class KidneyExchangeTest {
         // Neither will be able to match in Round 1, Hospital 1 will acquire pairs in Round 2,
         // pairs will be matched in Round 3
         Hospital[] hospitals = { hospital1, hospital2 };
-        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
         Assertions.assertEquals(hospital2.getSize(), 0);
     }
@@ -72,7 +72,7 @@ public class KidneyExchangeTest {
         // No one will be able to match in Round 1, Hospital 1 will acquire Hospital 2 pair in Round 2,
         // Hospital 1 will acquire Hospital 3 pair in round 3, pairs will be matched in round 4
         Hospital[] hospitals = { hospital1, hospital2, hospital3 };
-        KidneyExchange.runKidneyExchange(4, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(4, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
         Assertions.assertEquals(hospital2.getSize(), 0);
         Assertions.assertEquals(hospital3.getSize(), 0);
@@ -98,7 +98,7 @@ public class KidneyExchangeTest {
 
         // No one will ever be able to match, but by round 3, information will have been fully distributed
         Hospital[] hospitals = { hospital1, hospital2, hospital3 };
-        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital1.getSize(), 6);
         Assertions.assertEquals(hospital2.getSize(), 4);
         Assertions.assertEquals(hospital3.getSize(), 2);
@@ -133,7 +133,7 @@ public class KidneyExchangeTest {
         // Round 3: Hospital 1 can only perform two surgeries at a time, so will be left with four pairs
         //          Hospital 2 still waits for remaining pair to be requested
         Hospital[] hospitals = { hospital1, hospital2 };
-        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false);
+        KidneyExchange.runKidneyExchange(3, hospitals, matchingAlgorithm, false, false);
         Assertions.assertEquals(hospital1.getSize(), 4);
         Assertions.assertEquals(hospital2.getSize(), 1);
     }
@@ -177,7 +177,7 @@ public class KidneyExchangeTest {
 
         Hospital[] hospitals = { hospital1, hospital2 };
         // Hospital 1 will finish after 50 rounds, while Hospital 2 will finish in 25 rounds
-        KidneyExchange.runKidneyExchange(50, hospitals, MatchingAlgorithm.GREEDY, false);
+        KidneyExchange.runKidneyExchange(50, hospitals, MatchingAlgorithm.GREEDY, false, false);
         Assertions.assertEquals(hospital1.getSize(), 0);
         Assertions.assertEquals(hospital2.getSize(), 0);
     }
