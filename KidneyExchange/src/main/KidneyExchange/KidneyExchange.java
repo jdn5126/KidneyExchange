@@ -81,8 +81,13 @@ public class KidneyExchange {
                 System.out.print(hospital);
                 // Create directed graph from ExchangePairs
                 DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-                System.out.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
-                System.out.print(graph);
+
+                // Adjacency List should be printed when print level is verbose
+                boolean printAdjList = false;
+                if(printAdjList) {
+                    System.out.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
+                    System.out.print(graph);
+                }
 
                 // Get list of cycles
                 ArrayList<HashMap<ExchangePair, ExchangePair>> matches = KidneyExchangeHelper.greedyMatches(hospital,
@@ -117,6 +122,7 @@ public class KidneyExchange {
                         }
                         if(localCycle) {
                             // Perform surgeries and remove pairs from all hospitals
+                            System.out.println("----------------");
                             for (ExchangePair pair : cycle.keySet()) {
                                 System.out.println(pair.toString() + " -> " + cycle.get(pair).toString());
                                 for (Hospital h : hospitals) {
@@ -125,15 +131,20 @@ public class KidneyExchange {
                             }
                         } else if(highestRanked) {
                             // Acquire patients from lower ranked hospitals for matching next round.
+                            System.out.println("----------------");
                             for(ExchangePair pair : cycle.keySet()) {
                                 if(pair.getCurrentHospital() != hospital.getHospitalId()) {
                                     System.out.println("Moving " + pair.toString() + " from hospital " +
                                             pair.getCurrentHospital() + " to hospital " + hospital.getHospitalId());
+                                    // Remove knowledge of pair from current hospital and move to new hospital
+                                    Hospital currentHospital = hospitals[pair.getCurrentHospital() - 1];
+                                    currentHospital.removePair(pair);
                                     pair.setCurrentHospital(hospital.getHospitalId());
                                 }
                             }
                         }
                     }
+                    System.out.println("----------------");
                 }
                 // Inform higher ranked peer of unmatched pairs to be accounted for in next round.
                 // In other words, all peer information will be distributed after numHospital rounds.
