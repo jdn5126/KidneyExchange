@@ -51,20 +51,18 @@ public class KidneyExchange {
 
         // Run the kidney exchange for some fixed number of rounds
         int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
-        runKidneyExchange(numRounds, hospitals, cli.matchingAlgorithm, true, cli.test);
+        Tester tester = cli.test ? new Tester( cli.outputFileName, cli.disableTestPrinting ) : null;
+        runKidneyExchange(numRounds, hospitals, cli.matchingAlgorithm, !cli.disableIncremental, tester);
     }
 
     public static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm,
-                                         boolean incremental, boolean test) {
+                                         boolean incremental, Tester tester) {
         ConsoleLogger.println( "Using " + matchingAlgorithm + " algorithm" );
 
-        int numPairsTotal = Arrays.stream( hospitals ).mapToInt( h -> h.getSize() ).sum();
-        int numPairsOperated = 0;
-        Stopwatch runWatch = new Stopwatch();
-        Stopwatch roundWatch = new Stopwatch();
-        List<Long> roundDurations = new ArrayList<>( numRounds );
+        TestResults results = new TestResults( hospitals.length, numRounds,
+                Arrays.stream( hospitals ).mapToInt( h -> h.getSize() ).sum() );
 
-        runWatch.start();
+        results.startRun();
 
         // Each round of the kidney exchange works as follows:
         //     1. Each hospital creates a directed graph amongst ExchangePairs that it
@@ -87,7 +85,7 @@ public class KidneyExchange {
                 if(incremental) {
                     switch (KidneyExchangeHelper.rand.nextInt(5)) {
                         case 1: // add pair
-                            ++numPairsTotal;
+                            results.incrementNumPairsTotal();
                             KidneyExchangeHelper.addRandomExchangePair(hospital);
                             break;
                         case 2: // remove random pair that hospital is aware of
@@ -104,10 +102,10 @@ public class KidneyExchange {
                 ConsoleLogger.print(hospital);
 
                 // Get list of cycles
-                roundWatch.start();
+                results.startRound();
                 ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.GREEDY) ?
                         KidneyExchangeHelper.greedyMatches(hospital) : BasicCycleCoverMatcher.findMatches(hospital);
-                roundDurations.add( roundWatch.stop() );
+                results.stopRound( hospital.getHospitalId() );
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
                 if(matches != null && matches.size() > 0 && incremental &&
@@ -142,7 +140,7 @@ public class KidneyExchange {
                             ConsoleLogger.println("----------------");
                             for (ExchangePair pair : cycle.keySet()) {
                                 ConsoleLogger.println(pair.toString() + " -> " + cycle.get(pair).toString());
-                                ++numPairsOperated;
+                                results.incrementNumPairsOperated();
                                 for (Hospital h : hospitals) {
                                     h.removePair(pair);
                                 }
@@ -181,31 +179,11 @@ public class KidneyExchange {
             }
         }
 
-        if( test ) {
-            long runDuration = runWatch.stop();
-            TestResults results = new TestResults( numPairsOperated, numPairsTotal, runDuration, roundDurations );
+        results.stopRun();
 
-            System.out.println( "Operated on " + results.getNumPairsOperated() +
-                    " out of " + results.getNumPairsTotal() +
-                    " pairs (" + results.getOperationPercentage() + "% match rate)" );
-
-            System.out.println( "Total run duration in nanoseconds (seconds): " + results.getRunDurationNs() +
-                    " (" + results.getRunDurationSec() + ")"  );
-            System.out.println( "Durations per round in nanoseconds (seconds)" );
-            for( int iRound = 0; iRound < roundDurations.size(); ++iRound ) {
-                long roundDuration = results.getRoundDurationsNs().get( iRound );
-                double roundDurationSec = results.getRoundDurationsSec().get( iRound );
-                System.out.println( "    Round "  + (iRound + 1) + ": " + roundDuration + " (" + roundDurationSec + ")" );
-            }
-
-            Gson gson = new Gson();
-            try( Writer outputWriter = new FileWriter( "results.json" ) ) {
-                outputWriter.write( gson.toJson( results ) );
-            }
-            catch( Exception ex ) {
-                System.out.println( "Error writing test results." );
-                ex.printStackTrace( System.out );
-            }
+        if( tester != null ) {
+            tester.printResults( results );
+            tester.writeResults( results );
         }
     }
 }

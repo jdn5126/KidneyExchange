@@ -24,6 +24,15 @@ public class CommandLine {
     @Parameter( names={ "--quiet", "-q" }, description = "Disable console output" )
     boolean quiet = false;
 
-    @Parameter( names = { "--test", "-t" }, description = "Show test output and write it to disk" )
+    @Parameter( names = { "--test", "-t" }, description = "Generate test output" )
     boolean test = false;
+
+    @Parameter( names = { "--output", "-o" }, description = "Name of file to use for test output" )
+    String outputFileName = "results.json";
+
+    @Parameter( names = { "--disable-incremental", "-i" }, description = "Turns off the incremental setting" )
+    boolean disableIncremental = false;
+
+    @Parameter( names = { "--no-test-printing" }, description = "Don't print anything when running tests" )
+    boolean disableTestPrinting = false;
 }
