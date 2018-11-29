@@ -73,8 +73,9 @@ public class KidneyExchangeHelper {
     public static ArrayList<HashMap<ExchangePair, ExchangePair>> greedyMatches(Hospital hospital) {
         // Create directed graph from ExchangePairs
         DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-        ConsoleLogger.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
-        ConsoleLogger.print(graph);
+        // Print adjacency list only when debugging
+        //ConsoleLogger.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
+        //ConsoleLogger.print(graph);
 
         // Greedy matching algorithm is implemented as a variant of the Top Trading Cycle algorithm.
         //     1. Select unmatched node from graph.

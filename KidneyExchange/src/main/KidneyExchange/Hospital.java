@@ -48,7 +48,11 @@ public class Hospital {
         StringBuilder s = new StringBuilder();
         s.append("Hospital: " + hospitalId + ", maxSurgeries=" + maxSurgeries + "\n");
         for(ExchangePair pair: pairs) {
-            s.append(pair.toString() + "\n");
+            if(pair.getCurrentHospital() == hospitalId) {
+                s.append(pair.toString() + "\n");
+            } else {
+                s.append(pair.toString() + " (hospital: " + pair.getCurrentHospital() + ")\n");
+            }
         }
         return s.toString();
     }
