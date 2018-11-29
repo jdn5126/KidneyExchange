@@ -139,9 +139,12 @@ public class KidneyExchange {
                                 if(pair.getCurrentHospital() != hospital.getHospitalId()) {
                                     System.out.println("Moving " + pair.toString() + " from hospital " +
                                             pair.getCurrentHospital() + " to hospital " + hospital.getHospitalId());
-                                    // Remove knowledge of pair from current hospital and move to new hospital
-                                    Hospital currentHospital = hospitals[pair.getCurrentHospital() - 1];
-                                    currentHospital.removePair(pair);
+                                    // Remove knowledge of pair from all hospitals except new hospital
+                                    for(Hospital h: hospitals) {
+                                        if(h.getHospitalId() != hospital.getHospitalId()) {
+                                            h.removePair(pair);
+                                        }
+                                    }
                                     pair.setCurrentHospital(hospital.getHospitalId());
                                 }
                             }
@@ -151,7 +154,7 @@ public class KidneyExchange {
                 }
                 // Inform higher ranked peer of unmatched pairs to be accounted for in next round.
                 // In other words, all peer information will be distributed after numHospital rounds.
-                if(hospital.getHospitalId() != 1 && i < hospitals.length) {
+                if(hospital.getHospitalId() != 1) {
                     Hospital peer = hospitals[hospital.getHospitalId() - 2];
                     for(ExchangePair pair: hospital.getPairs()) {
                         if(!peer.hasPair(pair)) {
