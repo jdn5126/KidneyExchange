@@ -1,5 +1,6 @@
 package KidneyExchange;
 
+import KidneyExchange.LP.BasicCycleCoverMatcher;
 import com.beust.jcommander.JCommander;
 
 import java.util.ArrayList;
@@ -39,13 +40,16 @@ public class KidneyExchange {
         for(int i=0; i < numHospitals; i++) {
             System.out.print(hospitals[i]);
         }
+        System.out.println();
 
         // Run the kidney exchange for some fixed number of rounds
         int numRounds = (cli.numRounds == null) ? DEFAULT_NUM_ROUNDS : cli.numRounds;
-        runKidneyExchange(numRounds, hospitals);
+        runKidneyExchange(numRounds, hospitals, cli.matchingAlgorithm);
     }
 
-    private static void runKidneyExchange(int numRounds, Hospital[] hospitals) {
+    private static void runKidneyExchange(int numRounds, Hospital[] hospitals, MatchingAlgorithm matchingAlgorithm) {
+        System.out.println( "Using " + matchingAlgorithm + " algorithm" );
+
         // Each round of the kidney exchange works as follows:
         //     1. Each hospital creates a directed graph amongst ExchangePairs that it
         //        is aware of, where an edge from pair i to pair j indicates that pair
@@ -79,14 +83,10 @@ public class KidneyExchange {
                 }
                 // Print Hospital
                 System.out.print(hospital);
-                // Create directed graph from ExchangePairs
-                DirectedGraph graph = KidneyExchangeHelper.createDirectedGraph(hospital);
-                System.out.println("Adjacency List for Hospital " + hospital.getHospitalId() + ":");
-                System.out.print(graph);
 
                 // Get list of cycles
-                ArrayList<HashMap<ExchangePair, ExchangePair>> matches = KidneyExchangeHelper.greedyMatches(hospital,
-                                                                                                            graph);
+                ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.Greedy) ?
+                        KidneyExchangeHelper.greedyMatches(hospital) : BasicCycleCoverMatcher.findMatches(hospital);
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time
                 if(matches != null && matches.size() > 0 && KidneyExchangeHelper.rand.nextInt(8) == 7) {

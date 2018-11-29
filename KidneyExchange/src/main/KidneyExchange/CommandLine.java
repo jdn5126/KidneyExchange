@@ -17,4 +17,7 @@ public class CommandLine {
 
     @Parameter( names={ "--num-rounds", "-r" }, description = "Number of rounds to run kidney exchange" )
     Integer numRounds;
+
+    @Parameter( names={ "--algorithm", "-a" }, description = "Matching algorithm to use. Must be either greedy or ilp." )
+    MatchingAlgorithm matchingAlgorithm = MatchingAlgorithm.Greedy;
 }
