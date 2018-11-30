@@ -2,7 +2,6 @@
 
 import argparse
 import itertools
-import multiprocessing
 import os
 import random
 import subprocess
@@ -21,35 +20,30 @@ def random_seed( seed_for_seed ):
     while True:
         yield random.randrange( 2 ** 32 - 1 )
 
-def run_kidney_exchange( seed, results_dir, algorithm, max_surgeries, number_pairs, sample ):
-    config_dir = os.path.join( results_dir, "algorithm_%s_surgeries_%d_pairs_%d" % (algorithm, max_surgeries, number_pairs) )
-    make_directory( config_dir )
-    results_file = os.path.join( config_dir, "results_sample_%d.json" % sample )
-    print( "Running: %s" % results_file )
-    subprocess.run( ["java", "-jar", KIDNEY_JAR,
-        "-q", "-t", "--no-test-printing",
-        "-a", algorithm,
-        "-s", str(seed),
-        "-m", str(max_surgeries),
-        "-p", str(number_pairs),
-        "-o", results_file] )
+def run_kidney_exchange( results_dir, seed, max_surgeries, number_pairs, sample ):
+    for algorithm in ("GREEDY", "ILP"):
+        config_dir = os.path.join( results_dir, "algorithm_%s_surgeries_%d_pairs_%d" % (algorithm, max_surgeries, number_pairs) )
+        make_directory( config_dir )
+        results_file = os.path.join( config_dir, "results_sample_%d.json" % sample )
+        print( "Running: %s" % results_file )
+        subprocess.run( ["java", "-jar", KIDNEY_JAR,
+            "-q", "-t", "--no-test-printing",
+            "-a", algorithm,
+            "-s", str(seed),
+            "-m", str(max_surgeries),
+            "-p", str(number_pairs),
+            "-o", results_file] )
 
 def generate_results( args, results_dir ):
     make_directory( results_dir )
 
-    with multiprocessing.Pool( processes=args.samples ) as pool:
-        algorithms = ("GREEDY", "ILP")
-        max_surgeries_range = range( args.max_surgeries_lower, args.max_surgeries_upper + 1 )
-        number_pairs_range = range( args.pairs_lower, args.pairs_upper + 1 )
-        samples_range = range( args.samples )
+    seed_generator = random_seed( args.rng_seed )
+    max_surgeries_range = range( args.max_surgeries_lower, args.max_surgeries_upper + 1 )
+    number_pairs_range = range( args.pairs_lower, args.pairs_upper + 1 )
+    samples_range = range( args.samples )
 
-        config_args = ((seed, *rest_args)
-            for seed, rest_args in
-            zip( random_seed( args.rng_seed ), itertools.product( (results_dir,), algorithms, max_surgeries_range, number_pairs_range, samples_range ) ))
-
-        #pool.starmap( run_kidney_exchange, config_args )
-        for ca in config_args:
-            run_kidney_exchange( *ca )
+    for exchange_args in itertools.product( max_surgeries_range, number_pairs_range, samples_range ):
+        run_kidney_exchange( results_dir, next( seed_generator ), *exchange_args )
 
 def graph_results( args, results_dir ):
     pass
