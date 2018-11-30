@@ -2,14 +2,10 @@ package KidneyExchange;
 
 import KidneyExchange.LP.BasicCycleCoverMatcher;
 import com.beust.jcommander.JCommander;
-import com.google.gson.Gson;
 
-import java.io.FileWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class KidneyExchange {
     private static final int DEFAULT_NUM_HOSPITALS = 3;

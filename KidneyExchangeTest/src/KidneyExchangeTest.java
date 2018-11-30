@@ -7,10 +7,10 @@ public class KidneyExchangeTest {
 
     // Test a single round of runKidneyExchange with single hospital
     public void runKidneyExchangeTest1(MatchingAlgorithm matchingAlgorithm) {
-        int hospitalId = 0;
+        int hospitalId = 1;
         int pairId = 0;
         // Create a hospital with 3 surgery slots and add a cycle of length 3
-        Hospital hospital1 = new Hospital(++hospitalId, 3);
+        Hospital hospital1 = new Hospital(hospitalId, 3);
         hospital1.addPair(new ExchangePair(KidneyType.A, KidneyType.B, ++pairId, hospital1.getHospitalId()));
         hospital1.addPair(new ExchangePair(KidneyType.B, KidneyType.C, ++pairId, hospital1.getHospitalId()));
         hospital1.addPair(new ExchangePair(KidneyType.C, KidneyType.A, ++pairId, hospital1.getHospitalId()));
@@ -21,7 +21,7 @@ public class KidneyExchangeTest {
         Assertions.assertEquals(hospital1.getSize(), 0);
 
         // Create another hospital with 2 surgery slots and a cycle of length 3
-        Hospital hospital2 = new Hospital(++hospitalId, 2);
+        Hospital hospital2 = new Hospital(hospitalId, 2);
         hospital2.addPair(new ExchangePair(KidneyType.A, KidneyType.B, ++pairId, hospital2.getHospitalId()));
         hospital2.addPair(new ExchangePair(KidneyType.B, KidneyType.C, ++pairId, hospital2.getHospitalId()));
         hospital2.addPair(new ExchangePair(KidneyType.C, KidneyType.A, ++pairId, hospital2.getHospitalId()));
