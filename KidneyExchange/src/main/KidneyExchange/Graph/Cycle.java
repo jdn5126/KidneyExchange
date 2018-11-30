@@ -37,6 +37,10 @@ public class Cycle<T> {
         return cycleWeight;
     }
 
+    public int getCycleLength() {
+        return nodes.size();
+    }
+
     public boolean hasNode( Node<T> node ) {
         return nodes.contains( node );
     }

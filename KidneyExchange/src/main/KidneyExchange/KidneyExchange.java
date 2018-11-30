@@ -1,6 +1,8 @@
 package KidneyExchange;
 
 import KidneyExchange.LP.BasicCycleCoverMatcher;
+import KidneyExchange.LP.IWeightStrategy;
+import KidneyExchange.LP.WeightStrategyFactory;
 import com.beust.jcommander.JCommander;
 
 import java.util.ArrayList;
@@ -99,8 +101,14 @@ public class KidneyExchange {
 
                 // Get list of cycles
                 results.startRound();
-                ArrayList<HashMap<ExchangePair, ExchangePair>> matches = (matchingAlgorithm == MatchingAlgorithm.GREEDY) ?
-                        KidneyExchangeHelper.greedyMatches(hospital) : BasicCycleCoverMatcher.findMatches(hospital);
+                ArrayList<HashMap<ExchangePair, ExchangePair>> matches;
+                if(matchingAlgorithm == MatchingAlgorithm.GREEDY) {
+                    matches = KidneyExchangeHelper.greedyMatches(hospital);
+                }
+                else {
+                    IWeightStrategy weightStrategy = WeightStrategyFactory.create( matchingAlgorithm );
+                    matches = BasicCycleCoverMatcher.findMatches( hospital, weightStrategy );
+                }
                 results.stopRound( hospital.getHospitalId() );
 
                 // INCREMENTAL SETTING #2: Simulate matched pair dropping out 1/8 of the time

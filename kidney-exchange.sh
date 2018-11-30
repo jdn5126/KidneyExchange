@@ -6,7 +6,7 @@ function usage
     echo
     echo "Driver for Kidney Exchange program on PowerShell or PowerShell Core. Requires at least JRE 1.8."
     echo
-    echo "    -a <algorithm>           Matching algorithm to use for kidney exchange. Choose either ILP or Greedy."
+    echo "    -a <algorithm>           Matching algorithm to use for kidney exchange. Choose either ILP, Local_ILP, or Greedy."
     echo "    -h                       Show this usage and exit."
     echo "    -i                       Disable incremental setting."
     echo "    -m <max surgeries>       Max surgeries that can be performed per hospital per time step."
@@ -33,7 +33,7 @@ while getopts "s:n:p:m:r:a:qtih" OPTION; do
     case "$OPTION" in
         a)
             ALGORITHM_VALUE=`echo "$OPTARG" | tr a-z A-Z`
-            if [ "$ALGORITHM_VALUE" != "GREEDY" ] && [ "$ALGORITHM_VALUE" != "ILP" ]; then
+            if [ "$ALGORITHM_VALUE" != "GREEDY" ] && [ "$ALGORITHM_VALUE" != "ILP" ] && [ "$ALGORITHM_VALUE" != "LOCAL_ILP" ]; then
                 echo "Invalid algorithm $OPTARG given. Must be Greedy or ILP."
                 exit 1
             fi

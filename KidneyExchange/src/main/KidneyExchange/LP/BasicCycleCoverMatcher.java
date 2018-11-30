@@ -14,15 +14,16 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class BasicCycleCoverMatcher {
-    public static ArrayList<HashMap<ExchangePair, ExchangePair>> findMatches( Hospital hospital ) {
+    public static ArrayList<HashMap<ExchangePair, ExchangePair>> findMatches( Hospital hospital, IWeightStrategy weightStrategy ) {
         // Build the directed graph of pairs within the hospital.
         DirectedGraph<ExchangePair> graph = new DirectedGraph<>();
         List<ExchangePair> pairs = hospital.getPairs();
 
         for( ExchangePair fromPair : pairs ) {
             for( ExchangePair toPair : pairs ) {
-                if( fromPair.canReceive( toPair ) )
-                    graph.addEdge( fromPair, toPair );
+                if( fromPair.canReceive( toPair ) ) {
+                    graph.addEdgeWithWeight( fromPair, toPair, weightStrategy.getWeight( hospital, fromPair, toPair ) );
+                }
             }
         }
 
@@ -37,6 +38,12 @@ public class BasicCycleCoverMatcher {
             ConsoleLogger.println( cycle );
         }
 
+        // Check if there are even cycles that we can optimize over.
+        ArrayList<HashMap<ExchangePair, ExchangePair>> matches = new ArrayList<>();
+
+        if( cycles.size() == 0 )
+            return matches;
+
         // Build a new optimization model that looks to get the max weighted cycle cover in our hospital graph.
         Model model = new Model( "Max-weight Cycle Cover" );
 
@@ -46,13 +53,15 @@ public class BasicCycleCoverMatcher {
 
         // Each coefficient is equal to the weight of the corresponding cycle.
         int[] weights = cycles.stream().mapToInt( c -> c.getCycleWeight() ).toArray();
+        int[] sizes = cycles.stream().mapToInt( c -> c.getCycleLength() ).toArray();
 
         // When doing an optimization problem, Choco requires that the objective function is represented by a single
         // variable. For objective functions that incorporate multiple objective variables, that needs to be modeled as
         // an equality constraint. We also need to ensure we don't violate our max surgeries constraint, which means the
         // the max optimal weight is bounded above by the max surgeries the hospital can perform.
-        IntVar maxWeightVar = model.intVar( "maxWeight", 0, hospital.getMaxSurgeries() );
+        IntVar maxWeightVar = model.intVar( "maxWeight", 0, IntVar.MAX_INT_BOUND );
         model.scalar( cycleVars, weights, "=", maxWeightVar ).post();
+        model.scalar( cycleVars, sizes, "<=", hospital.getMaxSurgeries() ).post();
 
         // Setup per-node constraints. Each constraint enforces that a given node appears in only one cycle in the
         // optimal cycle cover.
@@ -82,7 +91,6 @@ public class BasicCycleCoverMatcher {
             throw new RuntimeException( "Failed to find optimal kidney exchange solution via constraint solver." );
 
         // Build out the list of matches in the format expected by the caller.
-        ArrayList<HashMap<ExchangePair, ExchangePair>> matches = new ArrayList<>();
         for( int iCycle = 0; iCycle < cycleVars.length; ++iCycle ) {
             if( solution.getIntVal( cycleVars[iCycle] ) == 1 ) {
                 ConsoleLogger.println( "Cycle " + (iCycle + 1) + " selected. " + cycles.get( iCycle ) );

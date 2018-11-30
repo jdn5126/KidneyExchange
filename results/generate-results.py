@@ -20,8 +20,8 @@ def random_seed( seed_for_seed ):
     while True:
         yield random.randrange( 2 ** 32 - 1 )
 
-def run_kidney_exchange( results_dir, seed, max_surgeries, number_pairs, sample ):
-    for algorithm in ("GREEDY", "ILP"):
+def run_kidney_exchange( results_dir, seed, number_hospitals, max_surgeries, number_pairs, sample ):
+    for algorithm in ("GREEDY", "ILP", "LOCAL_ILP"):
         config_dir = os.path.join( results_dir, "algorithm_%s_surgeries_%d_pairs_%d" % (algorithm, max_surgeries, number_pairs) )
         make_directory( config_dir )
         results_file = os.path.join( config_dir, "results_sample_%d.json" % sample )
@@ -30,6 +30,7 @@ def run_kidney_exchange( results_dir, seed, max_surgeries, number_pairs, sample 
             "-q", "-t", "--no-test-printing",
             "-a", algorithm,
             "-s", str(seed),
+            "-n", str(number_hospitals),
             "-m", str(max_surgeries),
             "-p", str(number_pairs),
             "-o", results_file] )
@@ -43,24 +44,24 @@ def generate_results( args, results_dir ):
     samples_range = range( args.samples )
 
     for exchange_args in itertools.product( max_surgeries_range, number_pairs_range, samples_range ):
-        run_kidney_exchange( results_dir, next( seed_generator ), *exchange_args )
+        run_kidney_exchange( results_dir, next( seed_generator ), args.hospitals, *exchange_args )
 
 def graph_results( args, results_dir ):
     pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-s", "--max-surgeries-lower",
+    parser.add_argument( "-m", "--max-surgeries-lower",
         type=int,
         default=3,
         help="Lower bound on max number of surgeries." )
 
-    parser.add_argument( "-S", "--max-surgeries-upper",
+    parser.add_argument( "-M", "--max-surgeries-upper",
         type=int,
         default=10,
         help="Upper bound on max number of surgeries." )
 
-    parser.add_argument( "-n", "--samples",
+    parser.add_argument( "-s", "--samples",
         type=int,
         default=5,
         help="Number of runs to perform for each configuration. This is to generate an average." )
@@ -72,14 +73,24 @@ if __name__ == "__main__":
 
     parser.add_argument( "-P", "--pairs-upper",
         type=int,
-        default=100,
+        default=25,
         help="Upper bound on number of pairs to assign to each hospital." )
+
+    parser.add_argument( "-n", "--hospitals",
+        type=int,
+        default=5,
+        help="Number of hospitals in the exchange." )
+
+    parser.add_argument( "-r", "--rounds",
+        type=int,
+        default=5,
+        help="Number of hospitals in the exchange." )
 
     parser.add_argument( "-g", "--graph-only",
         action="store_true",
         help="Skip generation data and use existing data from previous run. Graph results only." )
 
-    parser.add_argument( "-r", "--rng-seed",
+    parser.add_argument( "-b", "--rng-seed",
         type=int,
         default=0,
         help="RNG seed to use when generating RNG seeds for the kidney exchange." )

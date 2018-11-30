@@ -18,7 +18,7 @@ Max surgeries that can be performed per hospital per time step.
 Number of time steps to run the kidney exchange for.
 
 .PARAMETER Algorithm
-Matching algorithm to use for kidney exchange. Choose either ILP or Greedy.
+Matching algorithm to use for kidney exchange. Choose either ILP, Local_ILP, or Greedy.
 
 .PARAMETER Test
 Enable test output.
@@ -48,7 +48,7 @@ param(
     [int] $Rounds,
 
     [Parameter()]
-    [ValidateSet( "Greedy", "ILP" )]
+    [ValidateSet( "Greedy", "ILP", "Local_ILP" )]
     [string] $Algorithm,
 
     [Parameter()]
