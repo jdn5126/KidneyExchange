@@ -32,8 +32,8 @@ DISABLE_INCREMENTAL=
 while getopts "s:n:p:m:r:a:qtih" OPTION; do
     case "$OPTION" in
         a)
-            $ALGORITHM_VALUE=`echo "$OPTARG" | tr a-z A-Z`
-            if [ "$ALGORITHM_VALUE" != "GREEDY" -and "$ALGORITHM_VALUE" != "ILP "]; then
+            ALGORITHM_VALUE=`echo "$OPTARG" | tr a-z A-Z`
+            if [ "$ALGORITHM_VALUE" != "GREEDY" ] && [ "$ALGORITHM_VALUE" != "ILP" ]; then
                 echo "Invalid algorithm $OPTARG given. Must be Greedy or ILP."
                 exit 1
             fi
@@ -47,22 +47,22 @@ while getopts "s:n:p:m:r:a:qtih" OPTION; do
             DISABLE_INCREMENTAL="-i"
             ;;
         m)
-            if ! [[ $OPTARG =~ '^0|([1-9][0-9]*)$' ]] ; then
-                echo "Invalid max number of surgeries $OPTARG"
+            if [ "$OPTARG" -eq 0 ] || ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
+                echo "Invalid max number of surgeries: $OPTARG"
                 exit 1
             fi
             SURGERIES="-m $OPTARG"
             ;;
         n)
-            if ! [[ $OPTARG =~ '^0|([1-9][0-9]*)$' ]] ; then
-                echo "Invalid number of hospitals $OPTARG"
+            if [ "$OPTARG" -eq 0 ] || ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
+                echo "Invalid number of hospitals: $OPTARG"
                 exit 1
             fi
             HOSPITALS="-n $OPTARG"
             ;;
         p)
-            if ! [[ $OPTARG =~ '^0|([1-9][0-9]*)$' ]] ; then
-                echo "Invalid number of pairs $OPTARG"
+            if [ "$OPTARG" -eq 0 ] || ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
+                echo "Invalid number of pairs: $OPTARG"
                 exit 1
             fi
             PAIRS="-p $OPTARG"
@@ -71,7 +71,7 @@ while getopts "s:n:p:m:r:a:qtih" OPTION; do
             QUIET="-q"
             ;;
         r)
-            if ! [[ $OPTARG =~ '^0|([1-9][0-9]*)$' ]] ; then
+            if [ "$OPTARG" -eq 0 ] || ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
                 echo "Invalid number of rounds $OPTARG"
                 exit 1
             fi
