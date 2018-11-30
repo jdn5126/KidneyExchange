@@ -21,7 +21,7 @@ def random_seed( seed_for_seed ):
         yield random.randrange( 2 ** 32 - 1 )
 
 def run_kidney_exchange( results_dir, seed, number_hospitals, max_surgeries, number_pairs, sample ):
-    for algorithm in ("GREEDY", "ILP", "LOCAL_ILP"):
+    for algorithm in ("GREEDY", "LOCAL_ILP"):
         config_dir = os.path.join( results_dir, "algorithm_%s_surgeries_%d_pairs_%d" % (algorithm, max_surgeries, number_pairs) )
         make_directory( config_dir )
         results_file = os.path.join( config_dir, "results_sample_%d.json" % sample )
