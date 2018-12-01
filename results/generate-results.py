@@ -2,8 +2,13 @@
 
 import argparse
 import itertools
+import json
+import matplotlib.pyplot as plt
+import numpy
 import os
+import pathlib
 import random
+import re
 import subprocess
 
 SCRIPT_DIR = os.path.dirname( os.path.abspath( __file__ ) )
@@ -46,8 +51,78 @@ def generate_results( args, results_dir ):
     for exchange_args in itertools.product( max_surgeries_range, number_pairs_range, samples_range ):
         run_kidney_exchange( results_dir, next( seed_generator ), args.hospitals, *exchange_args )
 
+def pair_index( number_pairs, args ):
+    return number_pairs - args.pairs_lower
+
 def graph_results( args, results_dir ):
-    pass
+    pairs_domain = [p for p in range( args.pairs_lower, args.pairs_upper + 1 )]
+    run_duration_range = {
+        ("LOCAL_ILP", 3) : [None] * len( pairs_domain ),
+        ("LOCAL_ILP", 4) : [None] * len( pairs_domain ),
+        ("LOCAL_ILP", 5) : [None] * len( pairs_domain ),
+        ("GREEDY", 3) : [None] * len( pairs_domain ),
+        ("GREEDY", 4) : [None] * len( pairs_domain ),
+        ("GREEDY", 5) : [None] * len( pairs_domain )
+    }
+
+    operation_rate_range = {
+        ("LOCAL_ILP", 3) : [None] * len( pairs_domain ),
+        ("LOCAL_ILP", 4) : [None] * len( pairs_domain ),
+        ("LOCAL_ILP", 5) : [None] * len( pairs_domain ),
+        ("GREEDY", 3) : [None] * len( pairs_domain ),
+        ("GREEDY", 4) : [None] * len( pairs_domain ),
+        ("GREEDY", 5) : [None] * len( pairs_domain )
+    }
+
+    results_dir_path = pathlib.Path( results_dir )
+    test_run_pattern = re.compile( r'^algorithm_(?P<algorithm>[A-Z_]+)_surgeries_(?P<max_surgeries>\d+)_pairs_(?P<number_pairs>\d+)$' )
+    for test_run_path in results_dir_path.iterdir():
+        matches = test_run_pattern.match( test_run_path.name )
+        algorithm, max_surgeries, number_pairs = matches.group( "algorithm", "max_surgeries", "number_pairs" )
+        max_surgeries = int(max_surgeries)
+        number_pairs = int(number_pairs)
+
+        run_durations = []
+        operation_rates = []
+
+        for sample_path in test_run_path.glob( "*.json" ):
+            with open( sample_path, "r" ) as sample_file:
+                run_data = json.load( sample_file )
+                run_durations.append( run_data['runDuration'] )
+                operation_rates.append( run_data['operationRate'] )
+
+        run_duration_range[(algorithm, max_surgeries)][pair_index( number_pairs, args )] = (numpy.mean( run_durations ) / 1e9)
+        operation_rate_range[(algorithm, max_surgeries)][pair_index( number_pairs, args )] = numpy.mean( operation_rates )
+
+    print( pairs_domain )
+    print( run_duration_range )
+    print( operation_rate_range )
+
+    fig, ax = plt.subplots( figsize=(11,6) )
+    for (algorithm, max_surgeries) in run_duration_range:
+        ax.plot( pairs_domain, run_duration_range[(algorithm, max_surgeries)],
+            label=("%s - %d Max Surgeries" % (algorithm, max_surgeries)) )
+    ax.set_yscale( 'log' )
+    ax.set_xlabel( "Initial Number Pairs per Hospital" )
+    ax.set_ylabel( "Runtime (sec)" )
+    ax.grid( True )
+    ax.set_title( "Kidney Exchange Runtime (sec)" )
+    ax.legend( loc='upper left', bbox_to_anchor=(1,1) )
+    plt.subplots_adjust( right=0.7 )
+    plt.show()
+
+    fig, ax = plt.subplots( figsize=(11,6) )
+    for (algorithm, max_surgeries) in run_duration_range:
+        ax.plot( pairs_domain, operation_rate_range[(algorithm, max_surgeries)],
+            label=("%s - %d Max Surgeries" % (algorithm, max_surgeries)) )
+    ax.set_xlabel( "Initial Number Pairs per Hospital" )
+    ax.set_ylabel( "Patient Pair Proportion" )
+    ax.grid( True )
+    ax.set_ylim( 0, 1 )
+    ax.set_title( "Proportion of Patient Pairs Successfully Operated On" )
+    ax.legend( loc='upper left', bbox_to_anchor=(1,1) )
+    plt.subplots_adjust( right=0.7 )
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
